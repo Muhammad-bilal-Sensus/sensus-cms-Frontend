@@ -116,7 +116,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
       return;
     }
     updateProfile({
-      email: user.email,
+      email: user?.email ?? "",
       name: nextName,
       picture,
       city: city || undefined,
