@@ -1,47 +1,59 @@
-import type { AuthUser } from "../types/auth";
+import type { ApiEnvelope } from "../types/api";
+import type { ApiUser, AuthUser, LoginData } from "../types/auth";
+import { api } from "./api";
 
-const STORAGE_KEY = "albisher.session";
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const authKeys = {
+  me: ["auth", "me"] as const,
+};
 
-export function readSession(): AuthUser | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw) as Partial<AuthUser>;
-    if (typeof data.email !== "string" || typeof data.name !== "string" || !data.email) return null;
-    return {
-      email: data.email,
-      name: data.name,
-      picture: typeof data.picture === "string" ? data.picture : undefined,
-      city: typeof data.city === "string" ? data.city : undefined,
-      timeZone: typeof data.timeZone === "string" ? data.timeZone : undefined,
-      language: typeof data.language === "string" ? data.language : undefined,
-    };
-  } catch {
-    return null;
-  }
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export function toAuthUser(apiUser: ApiUser, previous?: AuthUser | null): AuthUser {
+  const sameUser = previous?.id === apiUser.id;
+  return {
+    ...apiUser,
+    picture: sameUser ? previous?.picture : undefined,
+    city: sameUser ? previous?.city : undefined,
+    timeZone: sameUser ? previous?.timeZone : undefined,
+    language: sameUser ? previous?.language : undefined,
+  };
 }
 
-export function saveSession(user: AuthUser) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-}
+export async function loginRequest(payload: LoginPayload) {
+  const { data } = await api.post<ApiEnvelope<LoginData>>("/api/cms/v1/login", {
+    email: payload.email.trim(),
+    password: payload.password,
+  });
 
-export function clearSession() {
-  localStorage.removeItem(STORAGE_KEY);
-}
-
-export function authenticate(
-  email: string,
-  password: string,
-): { ok: true; user: AuthUser } | { ok: false; error: string } {
-  const normalized = email.trim().toLowerCase();
-  if (!emailPattern.test(normalized)) {
-    return { ok: false, error: "Enter a valid email address." };
-  }
-  if (!password.trim()) {
-    return { ok: false, error: "Enter your password." };
+  if (!data.success || !data.data?.token || !data.data.user) {
+    throw new Error(data.message || "Login failed.");
   }
 
-  const name = normalized.split("@")[0] || normalized;
-  return { ok: true, user: { email: normalized, name } };
+  return {
+    ...data.data,
+    message: data.message.trim() || "Login successful.",
+  };
+}
+
+export async function logoutRequest() {
+  const { data } = await api.post<ApiEnvelope<unknown>>("/api/cms/v1/logout");
+
+  if (!data?.success) {
+    throw new Error(data?.message || "Logout failed.");
+  }
+
+  return data.message?.trim() || "Logged out.";
+}
+
+export async function fetchMe() {
+  const { data } = await api.get<ApiEnvelope<ApiUser>>("/api/cms/v1/me");
+
+  if (!data.success || !data.data?.email) {
+    throw new Error(data.message || "Could not load your profile.");
+  }
+
+  return data.data;
 }

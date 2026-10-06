@@ -10,7 +10,7 @@ import ProfileModal from "./ProfileModal";
 function AccountMenu() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const name = user?.name ?? "user";
+  const name = user?.full_name ?? "user";
   const initial = name.slice(0, 1).toUpperCase();
 
   return (

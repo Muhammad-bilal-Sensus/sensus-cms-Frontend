@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
+import { authKeys, fetchMe } from "../services/authService";
+import { getApiErrorMessage } from "../utils/apiError";
 import { Icon } from "./icons";
 
 const languages = [
@@ -19,6 +23,16 @@ type ProfileModalProps = {
 
 export default function ProfileModal({ open, onClose }: ProfileModalProps) {
   const { user, logout, updateProfile } = useAuth();
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: (message) => {
+      toast.success(message);
+      onClose();
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Logout failed."));
+    },
+  });
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
   const [picture, setPicture] = useState<string | undefined>();
@@ -30,12 +44,14 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
   const [nameError, setNameError] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [seenOpen, setSeenOpen] = useState(open);
+  const queryClient = useQueryClient();
 
   if (open !== seenOpen) {
     setSeenOpen(open);
     if (open && user) {
-      setName(user.name);
+      setName(user.full_name);
       setPicture(user.picture);
       setCity(user.city ?? "");
       setTimeZone(user.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone || "");
@@ -56,9 +72,34 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setRefreshing(true);
+    queryClient
+      .fetchQuery({
+        queryKey: authKeys.me,
+        queryFn: fetchMe,
+        retry: false,
+        staleTime: 0,
+      })
+      .then((apiUser) => {
+        if (!cancelled) setName(apiUser.full_name);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) toast.error(getApiErrorMessage(error, "Could not load your profile."));
+      })
+      .finally(() => {
+        if (!cancelled) setRefreshing(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, queryClient]);
+
   if (!open || !user) return null;
 
-  const initial = (name.trim() || user.name).slice(0, 1).toUpperCase() || "A";
+  const initial = (name.trim() || user.full_name).slice(0, 1).toUpperCase() || "A";
 
   function onPicture(file: File | undefined) {
     if (!file) return;
@@ -110,19 +151,21 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
   }
 
   function submit() {
+    if (!user) return;
     const nextName = name.trim();
     if (!nextName) {
       setNameError("Enter your name.");
       return;
     }
     updateProfile({
-      email: user?.email ?? "",
-      name: nextName,
+      ...user,
+      full_name: nextName,
       picture,
       city: city || undefined,
       timeZone: timeZone || undefined,
       language,
     });
+    toast.success("Profile updated.");
     onClose();
   }
 
@@ -141,6 +184,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
               Update Profile
             </h2>
             <p className="mt-0.5 text-xs text-slate-400">Update Information Below here.</p>
+            {refreshing ? <p className="mt-1 text-xs text-slate-400">Loading your profile…</p> : null}
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -174,12 +218,10 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
               background="#111111"
               height={32}
               className="px-3 text-xs"
-              onClick={() => {
-                logout();
-                onClose();
-              }}
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
             >
-              Logout
+              {logoutMutation.isPending ? "Logging out" : "Logout"}
               <svg viewBox="0 0 24 24" className="ml-2 h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M10 7V5a2 2 0 0 1 2-2h7v18h-7a2 2 0 0 1-2-2v-2" />
                 <path d="M15 12H3" />

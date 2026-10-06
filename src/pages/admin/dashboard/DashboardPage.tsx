@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { Icon } from "../../../layouts/icons";
 import MetricCard, { type MetricCardProps } from "../../../components/ui/MetricCard";
@@ -58,8 +58,12 @@ export default function DashboardPage() {
 	const { user } = useAuth();
 	const [selectedDate, setSelectedDate] = useState(() => new Date());
 	const [location, setLocation] = useState("");
-	const [teamMember, setTeamMember] = useState(user?.name ?? "");
-	const displayName = user?.name?.trim() || "My";
+	const displayName = user?.full_name?.trim() || "My";
+	const [teamMember, setTeamMember] = useState(user?.full_name ?? "");
+
+	useEffect(() => {
+		if (user?.full_name) setTeamMember(user.full_name);
+	}, [user?.full_name]);
 	
 	function moveDate(days: number) {
 		setSelectedDate((date) => {
@@ -88,7 +92,7 @@ export default function DashboardPage() {
 							value={teamMember}
 							onChange={setTeamMember}
 							placeholder="All team members"
-							options={user?.name ? [{ value: user.name, label: user.name }] : []}
+							options={user?.full_name ? [{ value: user.full_name, label: user.full_name }] : []}
 						/>
 					</label>
 				</div>
