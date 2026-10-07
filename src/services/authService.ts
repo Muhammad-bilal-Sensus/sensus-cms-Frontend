@@ -38,6 +38,46 @@ export async function loginRequest(payload: LoginPayload) {
   };
 }
 
+type MessageEnvelope = {
+  success?: boolean;
+  message?: string;
+};
+
+async function postAuthMessage(url: string, body: unknown, fallback: string) {
+  const { data } = await api.post<MessageEnvelope>(url, body);
+  const message = data?.message?.trim();
+  if (!data?.success) {
+    throw new Error(message || fallback);
+  }
+  return message || fallback;
+}
+
+export function forgotPasswordRequest(email: string) {
+  return postAuthMessage("/api/cms/v1/forgot-password", { email: email.trim() }, "Could not send the code.");
+}
+
+export function verifyOtpRequest(email: string, otp: string) {
+  return postAuthMessage("/api/cms/v1/verify-otp", { email: email.trim(), otp }, "Could not verify the code.");
+}
+
+export function resetPasswordRequest(payload: {
+  email: string;
+  otp: string;
+  password: string;
+  password_confirmation: string;
+}) {
+  return postAuthMessage(
+    "/api/cms/v1/reset-password",
+    {
+      email: payload.email.trim(),
+      otp: payload.otp,
+      password: payload.password,
+      password_confirmation: payload.password_confirmation,
+    },
+    "Could not reset the password.",
+  );
+}
+
 export async function logoutRequest() {
   const { data } = await api.post<ApiEnvelope<unknown>>("/api/cms/v1/logout");
 

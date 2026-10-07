@@ -8,6 +8,7 @@ type InputProps = {
   inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
   disabled?: boolean;
   name?: string;
+  autoComplete?: InputHTMLAttributes<HTMLInputElement>["autoComplete"];
   className?: string;
 };
 
@@ -19,6 +20,7 @@ export default function Input({
   inputMode,
   disabled = false,
   name,
+  autoComplete,
   className = "",
 }: InputProps) {
   return (
@@ -28,9 +30,10 @@ export default function Input({
       value={value}
       inputMode={inputMode}
       disabled={disabled}
+      autoComplete={autoComplete}
       placeholder={placeholder}
       onChange={(event) => onChange(event.target.value)}
-      className={`h-10 w-full rounded-full border border-slate-300 bg-white px-4 text-sm text-slate-700 outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/10 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`h-10 w-full rounded-full border border-slate-300 bg-white px-4 text-sm font-normal text-slate-700 outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/10 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     />
   );
 }

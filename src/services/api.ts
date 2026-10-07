@@ -32,7 +32,8 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     const status = error.response?.status;
     const url = error.config?.url ?? "";
-    if (status === 401 && !url.includes("/login")) {
+    const isPublicAuth = ["/login", "/forgot-password", "/verify-otp", "/reset-password"].some((path) => url.includes(path));
+    if (status === 401 && !isPublicAuth) {
       clearAuth();
       onUnauthorized?.();
     }
