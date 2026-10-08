@@ -68,6 +68,13 @@ function formatDateTime(value: string | null) {
   }).format(date);
 }
 
+function actorLabel(actor: CmsUser["created_by"]) {
+  if (!actor) return "—";
+  if (actor.full_name?.trim()) return actor.full_name;
+  const name = `${actor.first_name ?? ""} ${actor.last_name ?? ""}`.trim();
+  return name || actor.email || "—";
+}
+
 function initials(user: CmsUser) {
   const letters = `${user.first_name?.[0] ?? ""}${user.last_name?.[0] ?? ""}`.toUpperCase();
   return letters || user.email[0]?.toUpperCase() || "?";
@@ -103,6 +110,7 @@ function StatusPill({ status }: { status: string }) {
 export default function UsersPage() {
   const { user: sessionUser } = useAuth();
   const currentUserId = sessionUser?.id;
+  const isSuperAdmin = sessionUser?.role?.code === "superadmin";
   const canAddUser = sessionUser?.role?.is_system === true;
   const [search, setSearch] = useState("");
   const [roleId, setRoleId] = useState("");
@@ -189,36 +197,55 @@ export default function UsersPage() {
       {
         id: "created",
         header: "Created",
-        cell: (user) => <span className="text-slate-600">{formatDateTime(user.created_at)}</span>,
+        cell: (user) => <span className="whitespace-nowrap text-slate-600">{formatDateTime(user.created_at)}</span>,
       },
+      {
+        id: "createdBy",
+        header: "Created by",
+        cell: (user) => <span className="text-slate-600">{actorLabel(user.created_by)}</span>,
+      },
+      {
+        id: "updatedBy",
+        header: "Updated by",
+        cell: (user) => <span className="text-slate-600">{actorLabel(user.updated_by)}</span>,
+      },
+      // {
+      //   id: "updated",
+      //   header: "Updated",
+      //   cell: (user) => <span className="whitespace-nowrap text-slate-600">{formatDateTime(user.updated_at)}</span>,
+      // },
       {
         id: "actions",
         header: "",
-        cell: (user) => (
-          <span className="flex items-center justify-end gap-1">
-            <button
-              type="button"
-              aria-label={`Edit ${user.full_name}`}
-              onClick={() => setEditingUser(user)}
-              className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-            >
-              <PencilIcon />
-            </button>
-            {user.id === currentUserId ? null : (
+        cell: (user) => {
+          const lockedSuperAdmin = user.role?.code === "superadmin" && !isSuperAdmin;
+          if (lockedSuperAdmin) return null;
+          return (
+            <span className="flex items-center justify-end gap-1">
               <button
                 type="button"
-                aria-label={`Delete ${user.full_name}`}
-                onClick={() => setDeletingUser(user)}
-                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
+                aria-label={`Edit ${user.full_name}`}
+                onClick={() => setEditingUser(user)}
+                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
               >
-                <TrashIcon />
+                <PencilIcon />
               </button>
-            )}
-          </span>
-        ),
+              {user.id === currentUserId ? null : (
+                <button
+                  type="button"
+                  aria-label={`Delete ${user.full_name}`}
+                  onClick={() => setDeletingUser(user)}
+                  className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
+                >
+                  <TrashIcon />
+                </button>
+              )}
+            </span>
+          );
+        },
       },
     ],
-    [currentUserId],
+    [currentUserId, isSuperAdmin],
   );
 
   const roleOptions = (rolesQuery.data ?? []).map((role) => ({

@@ -175,6 +175,7 @@ export default function EditUserModal({ user, onClose }: EditUserModalProps) {
             <Input
               name="password"
               type="password"
+              revealable
               autoComplete="new-password"
               value={form.password}
               placeholder="Enter password"
@@ -186,6 +187,7 @@ export default function EditUserModal({ user, onClose }: EditUserModalProps) {
             <Input
               name="password_confirmation"
               type="password"
+              revealable
               autoComplete="new-password"
               value={form.confirmPassword}
               placeholder="Enter password"

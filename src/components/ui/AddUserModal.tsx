@@ -143,6 +143,7 @@ export default function AddUserModal({ open, onClose }: AddUserModalProps) {
           <Input
             name="password"
             type="password"
+            revealable
             autoComplete="new-password"
             value={form.password}
             placeholder="Enter password"
@@ -154,6 +155,7 @@ export default function AddUserModal({ open, onClose }: AddUserModalProps) {
           <Input
             name="password_confirmation"
             type="password"
+            revealable
             autoComplete="new-password"
             value={form.confirmPassword}
             placeholder="Enter password"

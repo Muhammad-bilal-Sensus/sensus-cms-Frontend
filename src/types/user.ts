@@ -12,6 +12,14 @@ export type CmsUserRole = {
   is_system: boolean;
 };
 
+export type UserAuditActor = {
+  id: number;
+  full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+} | null;
+
 export type CmsUser = {
   id: number;
   full_name: string;
@@ -20,8 +28,11 @@ export type CmsUser = {
   email: string;
   status: string;
   role: CmsUserRole | null;
+  created_by: UserAuditActor;
+  updated_by: UserAuditActor;
   last_login_at: string | null;
   created_at: string;
+  updated_at: string | null;
 };
 
 export type PageMeta = {
