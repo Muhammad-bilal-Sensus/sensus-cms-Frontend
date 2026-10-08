@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { usePermission } from "../access/usePermission";
 import { pathAfterLogin, ROUTES } from "../constants/routes";
 import { useAuth } from "../hooks/useAuth";
 
@@ -38,6 +40,14 @@ export function GuestRoute() {
   }
 
   return <Outlet />;
+}
+
+export function RequireAccess({ permissions, children }: { permissions?: readonly string[]; children: ReactNode }) {
+  const { canAny } = usePermission();
+  if (!canAny(permissions ?? [])) {
+    return <Navigate to={ROUTES.home} replace />;
+  }
+  return children;
 }
 
 export function AuthRedirect() {

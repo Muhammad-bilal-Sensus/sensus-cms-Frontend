@@ -230,3 +230,24 @@ export function Icon({ name, className }: { name: IconName; className?: string }
     </svg>
   );
 }
+
+export function PencilIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z" />
+    </svg>
+  );
+}
+
+export function TrashIcon() {
+  return (
+    <svg viewBox="0 0 48 56" className="h-4 w-4" aria-hidden="true">
+      <path
+        fill="#d32f2f"
+        fillRule="evenodd"
+        d="M4 17.5h40a2.5 2.5 0 0 0 2.5-2.5v-4A2.5 2.5 0 0 0 44 8.5H31V6.2A3.2 3.2 0 0 0 27.8 3h-7.6A3.2 3.2 0 0 0 17 6.2V8.5H4A2.5 2.5 0 0 0 1.5 11v4A2.5 2.5 0 0 0 4 17.5Zm14.2-11.3h11.6a1 1 0 0 1 1 1V9H17.2V7.2a1 1 0 0 1 1-1ZM6 20h36v28.5a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V20Zm7.2 6h3.2a1.6 1.6 0 0 1 1.6 1.6v16.8a1.6 1.6 0 0 1-1.6 1.6h-3.2a1.6 1.6 0 0 1-1.6-1.6V27.6A1.6 1.6 0 0 1 13.2 26Zm9.2 0h3.2a1.6 1.6 0 0 1 1.6 1.6v16.8a1.6 1.6 0 0 1-1.6 1.6h-3.2a1.6 1.6 0 0 1-1.6-1.6V27.6a1.6 1.6 0 0 1 1.6-1.6Zm9.2 0h3.2a1.6 1.6 0 0 1 1.6 1.6v16.8a1.6 1.6 0 0 1-1.6 1.6H31.6a1.6 1.6 0 0 1-1.6-1.6V27.6a1.6 1.6 0 0 1 1.6-1.6Z"
+      />
+    </svg>
+  );
+}

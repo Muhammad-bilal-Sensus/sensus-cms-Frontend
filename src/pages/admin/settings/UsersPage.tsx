@@ -8,6 +8,7 @@ import Input from "../../../components/ui/Input";
 import Pagination from "../../../components/ui/Pagination";
 import Select from "../../../components/ui/Select";
 import Table, { type TableColumn } from "../../../components/ui/Table";
+import { usePermission } from "../../../access/usePermission";
 import { useAuth } from "../../../hooks/useAuth";
 import { fetchRoles, roleKeys } from "../../../services/roleService";
 import { fetchUsers, userKeys, type FetchUsersParams } from "../../../services/userService";
@@ -109,9 +110,12 @@ function StatusPill({ status }: { status: string }) {
 
 export default function UsersPage() {
   const { user: sessionUser } = useAuth();
+  const { can } = usePermission();
   const currentUserId = sessionUser?.id;
   const isSuperAdmin = sessionUser?.role?.code === "superadmin";
-  const canAddUser = sessionUser?.role?.is_system === true;
+  const canAddUser = can("users.create");
+  const canEditUser = can("users.update");
+  const canDeleteUser = can("users.delete");
   const [search, setSearch] = useState("");
   const [roleId, setRoleId] = useState("");
   const [status, setStatus] = useState("");
@@ -219,18 +223,22 @@ export default function UsersPage() {
         header: "",
         cell: (user) => {
           const lockedSuperAdmin = user.role?.code === "superadmin" && !isSuperAdmin;
-          if (lockedSuperAdmin) return null;
+          const showEdit = canEditUser && !lockedSuperAdmin;
+          const showDelete = canDeleteUser && user.id !== currentUserId && !lockedSuperAdmin;
+          if (!showEdit && !showDelete) return null;
           return (
             <span className="flex items-center justify-end gap-1">
-              <button
-                type="button"
-                aria-label={`Edit ${user.full_name}`}
-                onClick={() => setEditingUser(user)}
-                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-              >
-                <PencilIcon />
-              </button>
-              {user.id === currentUserId ? null : (
+              {showEdit ? (
+                <button
+                  type="button"
+                  aria-label={`Edit ${user.full_name}`}
+                  onClick={() => setEditingUser(user)}
+                  className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
+                >
+                  <PencilIcon />
+                </button>
+              ) : null}
+              {showDelete ? (
                 <button
                   type="button"
                   aria-label={`Delete ${user.full_name}`}
@@ -239,13 +247,13 @@ export default function UsersPage() {
                 >
                   <TrashIcon />
                 </button>
-              )}
+              ) : null}
             </span>
           );
         },
       },
     ],
-    [currentUserId, isSuperAdmin],
+    [canDeleteUser, canEditUser, currentUserId, isSuperAdmin],
   );
 
   const roleOptions = (rolesQuery.data ?? []).map((role) => ({

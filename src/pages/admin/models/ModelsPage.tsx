@@ -15,6 +15,7 @@ import {
   type TrimDraft,
   type VersionDraft,
 } from "../../../modules/models/types";
+import { usePermission } from "../../../access/usePermission";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import ModelWorkspace from "../../../components/ui/ModelWorkspace";
@@ -79,6 +80,8 @@ function trimError(draft: TrimDraft, trims: ModelTrim[]) {
 }
 
 export default function ModelsPage() {
+  const { can } = usePermission();
+  const canCreateModel = can("models.create");
   const [models, setModels] = useState<CatalogModel[]>(() => structuredClone(previewModels));
   const [screen, setScreen] = useState<Screen>({ name: "list" });
   const [oemId, setOemId] = useState("");
@@ -314,7 +317,7 @@ export default function ModelsPage() {
           <p className="mt-1 text-sm text-slate-500">OEM catalog, model versions, and current trim prices.</p>
         </div>
         {screen.name === "list" ? (
-          <Button variant="primary" onClick={openCreate}>New model</Button>
+          canCreateModel ? <Button variant="primary" onClick={openCreate}>New model</Button> : null
         ) : (
           <Button variant="secondary" onClick={() => setScreen({ name: "list" })}>Back to models</Button>
         )}

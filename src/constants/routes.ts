@@ -6,6 +6,8 @@ export const ROUTES = {
   home: "/dashboard",
   models: "/models",
   users: "/settings/users",
+  roles: "/settings/roles",
+  roleNew: "/settings/roles/new",
 } as const;
 
 const guestPaths = new Set<string>([ROUTES.login, ROUTES.resetPassword, ROUTES.verifyOtp, ROUTES.setPassword]);
