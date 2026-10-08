@@ -1,51 +1,80 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import Button from "../../components/ui/Button";
+import { UserIcon } from "../../components/ui/icons";
 import { ROUTES } from "../../constants/routes";
+import { forgotPasswordRequest } from "../../services/authService";
+import { getApiErrorMessage } from "../../utils/apiError";
+import { readPasswordResetDraft, savePasswordResetDraft } from "../../services/passwordResetDraft";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const fieldClass =
+  "h-[52px] w-full rounded-full bg-[#e7eef6] text-[15px] text-slate-700 outline-none placeholder:text-slate-400";
+
 export default function ResetPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const incoming = location.state as { email?: string } | null;
+  const [email, setEmail] = useState(() => incoming?.email?.trim() || readPasswordResetDraft()?.email || "");
+  const [emailError, setEmailError] = useState("");
+
+  const sendMutation = useMutation({
+    mutationFn: (value: string) => forgotPasswordRequest(value),
+    onSuccess: (message, value) => {
+      toast.success(message);
+      const draft = { email: value };
+      savePasswordResetDraft(draft);
+      navigate(ROUTES.verifyOtp, { state: draft });
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Could not send the code."));
+    },
+  });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const normalized = email.trim().toLowerCase();
-    if (!emailPattern.test(normalized)) {
-      setError("Enter a valid email address.");
-      setSent(false);
-      return;
-    }
-    setError(null);
-    setSent(true);
+    const normalized = email.trim();
+    const nextEmailError = emailPattern.test(normalized) ? "" : "Enter a valid email address.";
+    setEmailError(nextEmailError);
+    if (nextEmailError) return;
+    sendMutation.mutate(normalized);
   }
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-3.5" noValidate>
       <p className="mb-1 text-center text-sm text-white/70">Enter your email to reset your password.</p>
-      <label className="block">
-        <span className="sr-only">Email</span>
-        <input
-          type="email"
-          name="email"
-          autoComplete="username"
-          placeholder="Email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          className="h-[52px] w-full rounded-full bg-[#e7eef6] px-5 text-[15px] text-slate-700 outline-none placeholder:text-slate-400"
-        />
-      </label>
+      <div>
+        <label className="relative block">
+          <span className="sr-only">Email</span>
+          <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-400">
+            <UserIcon />
+          </span>
+          <input
+            type="email"
+            name="email"
+            autoComplete="username"
+            placeholder="Email"
+            value={email}
+            aria-invalid={Boolean(emailError)}
+            aria-describedby={emailError ? "reset-email-error" : undefined}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (emailError) setEmailError("");
+            }}
+            className={`${fieldClass} pr-4 pl-12`}
+          />
+        </label>
+        {emailError ? (
+          <p id="reset-email-error" className="mt-1.5 px-4 text-xs text-rose-300">
+            {emailError}
+          </p>
+        ) : null}
+      </div>
 
-      {error && <p className="text-center text-xs text-rose-300">{error}</p>}
-      {sent && (
-        <p className="text-center text-xs text-white/75">
-          If an account exists for this email, reset instructions have been sent.
-        </p>
-      )}
-
-      <Button type="submit" text="SEND" />
+      <Button type="submit" text={sendMutation.isPending ? "WAIT" : "SEND"} disabled={sendMutation.isPending} />
 
       <Link to={ROUTES.login} className="mt-1 text-center text-[13px] text-white/80 hover:text-white">
         Back to login
