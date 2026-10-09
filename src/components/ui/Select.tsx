@@ -1,9 +1,12 @@
+import type { Ref, SelectHTMLAttributes } from "react";
+
 export type SelectOption = {
   value: string;
   label: string;
 };
 
-type SelectProps = {
+type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, "value" | "onChange" | "size"> & {
+  ref?: Ref<HTMLSelectElement>;
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
@@ -26,12 +29,14 @@ export default function Select({
   size = "md",
   disabled = false,
   name,
+  ...nativeProps
 }: SelectProps) {
   const style = sizes[size];
 
   return (
     <div className={`relative ${size === "md" ? "w-full" : "inline-flex"}`}>
       <select
+        {...nativeProps}
         name={name}
         value={value}
         disabled={disabled}

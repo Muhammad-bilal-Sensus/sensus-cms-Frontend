@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { usePermission } from "../access/usePermission";
-import { Icon } from "./icons";
+import { Icon } from "@/components/icons/Icon";
 import { sideNav } from "./navigation";
 
 type Props = {

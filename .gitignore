@@ -3,3 +3,9 @@ dist
 .env
 .env.local
 package-lock.json
+# Browser test artifacts
+test-results/
+playwright-report/
+
+# Local project documentation
+/docs/

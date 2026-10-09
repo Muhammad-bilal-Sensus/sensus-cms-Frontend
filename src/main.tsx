@@ -1,12 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Provider } from "react-redux";
 import { Toaster } from "sonner";
-import App from "./App";
+import App from "@/app/App";
 import "./styles/index.css";
-
-const queryClient = new QueryClient();
+import { store } from "@/redux/store/store";
 
 const rootElement = document.getElementById("root");
 
@@ -16,11 +15,11 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <Provider store={store}>
       <BrowserRouter>
         <App />
         <Toaster position="top-center" richColors closeButton />
       </BrowserRouter>
-    </QueryClientProvider>
+    </Provider>
   </StrictMode>,
 );

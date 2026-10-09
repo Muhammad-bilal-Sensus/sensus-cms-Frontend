@@ -1,4 +1,4 @@
-import { Icon } from "../../layouts/icons";
+import { Icon } from "@/components/icons/Icon";
 import Select from "./Select";
 
 export const defaultPageSizeOptions = [5, 10, 25];
