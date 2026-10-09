@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { usePermission } from "../access/usePermission";
 import { LogoIcon } from "../components/ui/icons";
 import { useAuth } from "../hooks/useAuth";
 import AllModulesModal from "./AllModulesModal";
@@ -38,6 +39,8 @@ function AccountMenu() {
 
 export default function AdminHeader() {
   const [modulesOpen, setModulesOpen] = useState(false);
+  const { canAny } = usePermission();
+  const items = topNav.filter((item) => canAny(item.permissions ?? []));
 
   return (
     <header className="z-20 flex h-20 shrink-0 items-center border-b border-slate-200 bg-white pr-4">
@@ -47,7 +50,7 @@ export default function AdminHeader() {
 
       <div className="flex min-w-0 flex-1 items-center gap-3 pr-4">
         <nav className="no-scrollbar flex min-w-0 items-center overflow-x-auto gap-2 pl-5">
-          {topNav.map((item) => (
+          {items.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

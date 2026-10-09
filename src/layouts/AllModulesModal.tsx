@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { usePermission } from "../access/usePermission";
 import { Icon } from "./icons";
 import { sideNav, topNav } from "./navigation";
-
-const modules = [...sideNav, ...topNav];
 
 type Props = {
   open: boolean;
@@ -12,6 +11,8 @@ type Props = {
 
 export default function AllModulesModal({ open, onClose }: Props) {
   const [query, setQuery] = useState("");
+  const { canAny } = usePermission();
+  const modules = [...sideNav, ...topNav].filter((item) => canAny(item.permissions ?? []));
 
   useEffect(() => {
     if (open) setQuery("");

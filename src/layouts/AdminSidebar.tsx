@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { usePermission } from "../access/usePermission";
 import { Icon } from "./icons";
 import { sideNav } from "./navigation";
 
@@ -8,6 +9,9 @@ type Props = {
 };
 
 export default function AdminSidebar({ open, onToggle }: Props) {
+  const { canAny } = usePermission();
+  const items = sideNav.filter((item) => canAny(item.permissions ?? []));
+
   return (
     <aside
       className={`flex shrink-0 flex-col border-r border-slate-200/80 bg-[#eef1f4] transition-[width] duration-200 ease-out ${
@@ -20,7 +24,7 @@ export default function AdminSidebar({ open, onToggle }: Props) {
         </p>
 
         <nav className="flex flex-col gap-1">
-          {sideNav.map((item) => (
+          {items.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
