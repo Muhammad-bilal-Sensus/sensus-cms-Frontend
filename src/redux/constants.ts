@@ -3,6 +3,7 @@ export enum ApiTag {
   Users = "Users",
   Roles = "Roles",
   Permissions = "Permissions",
+  Oems = "Oems",
 }
 
 export enum ApiErrorKind {
@@ -40,6 +41,7 @@ export const API_PATH = {
   Users: "/api/cms/v1/users",
   Roles: "/api/cms/v1/roles",
   Permissions: "/api/cms/v1/permissions",
+  Oems: "/api/cms/v1/oems",
 } as const;
 
 export const PUBLIC_AUTH_ENDPOINTS: readonly string[] = [

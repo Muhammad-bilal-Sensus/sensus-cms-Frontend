@@ -4,6 +4,7 @@ export const ROUTES = {
   verifyOtp: "/reset-password/verify",
   setPassword: "/reset-password/new",
   home: "/dashboard",
+  oems: "/oems",
   models: "/models",
   offers: "/offers",
   testDrive: "/test-drive",
