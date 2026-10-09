@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { usePermission } from "../access/usePermission";
-import { Icon } from "./icons";
+import { Icon } from "@/components/icons/Icon";
 import { sideNav, topNav } from "./navigation";
 
 type Props = {

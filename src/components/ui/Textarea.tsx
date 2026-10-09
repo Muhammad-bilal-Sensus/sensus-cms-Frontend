@@ -1,4 +1,7 @@
-type TextareaProps = {
+import type { Ref, TextareaHTMLAttributes } from "react";
+
+type TextareaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange"> & {
+  ref?: Ref<HTMLTextAreaElement>;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -16,9 +19,11 @@ export default function Textarea({
   disabled = false,
   name,
   className = "",
+  ...nativeProps
 }: TextareaProps) {
   return (
     <textarea
+      {...nativeProps}
       name={name}
       value={value}
       rows={rows}

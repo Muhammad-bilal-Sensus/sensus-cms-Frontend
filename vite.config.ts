@@ -12,4 +12,16 @@ export default defineConfig({
       "@": path.resolve(rootDir, "src"),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [{
+            name: "forms",
+            test: /node_modules[\\/](?:zod|react-hook-form|@hookform[\\/]resolvers)[\\/]/,
+          }],
+        },
+      },
+    },
+  },
 });

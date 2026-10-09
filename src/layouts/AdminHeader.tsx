@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { usePermission } from "../access/usePermission";
-import { LogoIcon } from "../components/ui/icons";
-import { useAuth } from "../hooks/useAuth";
+import { LogoIcon } from "@/components/icons/FormIcons";
+import { useAuth } from "@/features/auth/useAuth";
 import AllModulesModal from "./AllModulesModal";
-import { Icon } from "./icons";
+import { Icon } from "@/components/icons/Icon";
 import { topNav } from "./navigation";
-import ProfileModal from "./ProfileModal";
+import ProfileModal from "@/features/profile/ProfileModal";
 
 function AccountMenu() {
   const { user } = useAuth();

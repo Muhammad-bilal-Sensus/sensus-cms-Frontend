@@ -1,7 +1,8 @@
-import { useState, type InputHTMLAttributes } from "react";
-import { EyeIcon } from "./icons";
+import { useState, type InputHTMLAttributes, type Ref } from "react";
+import { EyeIcon } from "@/components/icons/FormIcons";
 
-type InputProps = {
+type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & {
+  ref?: Ref<HTMLInputElement>;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -25,12 +26,14 @@ export default function Input({
   autoComplete,
   revealable = false,
   className = "",
+  ...nativeProps
 }: InputProps) {
   const [visible, setVisible] = useState(false);
   const fieldClass = `h-10 w-full rounded-full border border-slate-300 bg-white px-4 text-sm font-normal text-slate-700 outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/10 disabled:cursor-not-allowed disabled:opacity-50 ${revealable ? "!pr-10" : ""} ${className}`;
 
   const field = (
     <input
+      {...nativeProps}
       type={revealable && visible ? "text" : type}
       name={name}
       value={value}

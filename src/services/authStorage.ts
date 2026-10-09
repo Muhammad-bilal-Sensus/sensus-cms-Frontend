@@ -1,4 +1,4 @@
-import type { AuthUser } from "../types/auth";
+import type { AuthUser } from "@/features/auth/authTypes";
 
 const STORAGE_KEY = "cms.auth";
 const LEGACY_KEY = "albisher.session";

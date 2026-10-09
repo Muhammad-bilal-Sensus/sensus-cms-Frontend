@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/features/auth/useAuth";
 import { hasAnyPermission, permissionCodeSet } from "./permissions";
 
 export function usePermission() {
