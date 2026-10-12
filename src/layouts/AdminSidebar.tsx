@@ -1,16 +1,52 @@
 import { NavLink } from "react-router-dom";
 import { usePermission } from "../access/usePermission";
 import { Icon } from "@/components/icons/Icon";
-import { sideNav } from "./navigation";
+import { mainNav, settingsNav, type NavItem } from "./navigation";
 
 type Props = {
   open: boolean;
   onToggle: () => void;
 };
 
+function NavItems({ items, open }: { items: NavItem[]; open: boolean }) {
+  return (
+    <nav className="flex flex-col gap-0.5">
+      {items.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end
+          title={open ? undefined : item.label}
+          className={({ isActive }) =>
+            `group flex h-10 items-center rounded-xl text-[13.5px] transition-colors ${
+              open ? "gap-3 px-3" : "justify-center"
+            } ${
+              isActive
+                ? "bg-white font-medium text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+                : "text-slate-500 hover:bg-white/75 hover:text-slate-800"
+            }`
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <Icon
+                name={item.icon}
+                className={`h-[18px] w-[18px] shrink-0 ${isActive ? "text-slate-800" : "text-slate-400 group-hover:text-slate-600"}`}
+              />
+              {open && <span className="truncate">{item.label}</span>}
+            </>
+          )}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
 export default function AdminSidebar({ open, onToggle }: Props) {
   const { canAny } = usePermission();
-  const items = sideNav.filter((item) => canAny(item.permissions ?? []));
+  const visible = (items: NavItem[]) => items.filter((item) => canAny(item.permissions ?? []));
+  const primary = visible(mainNav);
+  const settings = visible(settingsNav);
 
   return (
     <aside
@@ -19,32 +55,20 @@ export default function AdminSidebar({ open, onToggle }: Props) {
       }`}
     >
       <div className={`thin-scroll flex-1 overflow-x-hidden overflow-y-auto py-5 ${open ? "px-3" : "px-2"}`}>
-        <p className={`mb-3 px-2 text-[13px] font-medium text-slate-500 ${open ? "" : "sr-only"}`}>
+        <p className={`mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400 ${open ? "" : "sr-only"}`}>
           CMS
         </p>
+        <NavItems items={primary} open={open} />
 
-        <nav className="flex flex-col gap-1">
-          {items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end
-              title={open ? undefined : item.label}
-              className={({ isActive }) =>
-                `flex h-10 items-center rounded-xl text-[13.5px] transition-colors ${
-                  open ? "gap-3 px-3" : "justify-center"
-                } ${
-                  isActive
-                    ? "bg-white font-medium text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:bg-white/80 hover:text-slate-800"
-                }`
-              }
-            >
-              <Icon name={item.icon} className="h-[18px] w-[18px] shrink-0" />
-              {open && <span className="truncate">{item.label}</span>}
-            </NavLink>
-          ))}
-        </nav>
+        {settings.length > 0 && (
+          <div className="mt-6">
+            <div className={`mb-3 h-px bg-slate-300/80 ${open ? "mx-2" : "mx-3"}`} />
+            <p className={`mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400 ${open ? "" : "sr-only"}`}>
+              Settings
+            </p>
+            <NavItems items={settings} open={open} />
+          </div>
+        )}
       </div>
 
       <div className={`flex items-end gap-3 px-3 pb-4 ${open ? "justify-between" : "justify-center"}`}>

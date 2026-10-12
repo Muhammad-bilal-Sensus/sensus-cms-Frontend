@@ -10,6 +10,7 @@ export type NavItem = {
 
 // RFQ Part 2 — Primary navigation (top menu)
 export const topNav: NavItem[] = [
+  { label: "OEMs", to: ROUTES.oems, icon: "building" },
   { label: "Models", to: ROUTES.models, icon: "car", permissions: ["models.view"] },
   { label: "Offers", to: ROUTES.offers, icon: "tag", permissions: ["offers.view"] },
   { label: "Test Drive", to: ROUTES.testDrive, icon: "activity", permissions: ["bookings.view"] },
@@ -21,16 +22,21 @@ export const topNav: NavItem[] = [
 ];
 
 // CMS areas from the same RFQ: dashboard, CRM leads, locations, media, and content governance
-export const sideNav: NavItem[] = [
+export const mainNav: NavItem[] = [
   { label: "Dashboard", to: ROUTES.home, icon: "home" },
   { label: "Leads", to: ROUTES.leads, icon: "userPlus", permissions: ["leads.view"] },
   { label: "Locations", to: ROUTES.branches, icon: "pin" },
   { label: "Media", to: ROUTES.media, icon: "image", permissions: ["media.upload", "media.delete"] },
   { label: "Approvals", to: ROUTES.approvals, icon: "check", permissions: ["models.publish", "offers.publish", "pages.publish", "articles.publish"] },
-  { label: "Audit Log", to: ROUTES.audit, icon: "chart", permissions: ["audit_logs.view"] },
-  { label: "Users", to: ROUTES.users, icon: "users", permissions: ["users.view"] },
-  { label: "Roles", to: ROUTES.roles, icon: "clipboard", permissions: ["roles.view"] },
   { label: "SEO", to: ROUTES.seo, icon: "search" },
 ];
+
+export const settingsNav: NavItem[] = [
+  { label: "Users", to: ROUTES.users, icon: "users", permissions: ["users.view"] },
+  { label: "Roles", to: ROUTES.roles, icon: "clipboard", permissions: ["roles.view"] },
+  { label: "Audit Log", to: ROUTES.audit, icon: "chart", permissions: ["audit_logs.view"] },
+];
+
+export const sideNav: NavItem[] = [...mainNav, ...settingsNav];
 
 export const allLinks = [...topNav, ...sideNav];

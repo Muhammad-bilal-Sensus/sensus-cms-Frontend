@@ -1,22 +1,36 @@
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
+export const ModalSize = {
+  sm: "sm",
+  md: "md",
+  lg: "lg",
+} as const;
+
+export const ModalAlign = {
+  start: "start",
+  center: "center",
+} as const;
+
+export type ModalSize = (typeof ModalSize)[keyof typeof ModalSize];
+export type ModalAlign = (typeof ModalAlign)[keyof typeof ModalAlign];
+
 type ModalProps = {
   open: boolean;
   title: string;
   description?: string;
   onClose: () => void;
   children: ReactNode;
-  size?: "sm" | "md" | "lg";
-  align?: "start" | "center";
+  size?: ModalSize;
+  align?: ModalAlign;
   compact?: boolean;
   hideTitle?: boolean;
 };
 
-const widths = {
-  sm: "max-w-sm",
-  md: "max-w-md",
-  lg: "max-w-2xl",
+const widths: Record<ModalSize, string> = {
+  [ModalSize.sm]: "max-w-sm",
+  [ModalSize.md]: "max-w-md",
+  [ModalSize.lg]: "max-w-2xl",
 };
 
 export default function Modal({
@@ -25,8 +39,8 @@ export default function Modal({
   description,
   onClose,
   children,
-  size = "lg",
-  align = "start",
+  size = ModalSize.lg,
+  align = ModalAlign.start,
   compact = false,
   hideTitle = false,
 }: ModalProps) {
