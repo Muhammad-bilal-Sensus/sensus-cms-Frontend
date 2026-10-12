@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Loading from "./Loading";
 
 export type TableColumn<T> = {
   id: string;
@@ -13,6 +14,8 @@ type TableProps<T> = {
   emptyLabel: string;
   onRowClick?: (row: T) => void;
   selectedRowId?: string;
+  isLoading?: boolean;
+  loadingLabel?: string;
 };
 
 export default function Table<T>({
@@ -22,10 +25,13 @@ export default function Table<T>({
   emptyLabel,
   onRowClick,
   selectedRowId,
+  isLoading = false,
+  loadingLabel = "Loading",
 }: TableProps<T>) {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-left text-sm">
+    <div className="relative">
+      <div className={`overflow-x-auto ${isLoading ? "pointer-events-none opacity-50" : ""}`}>
+        <table className="min-w-full text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase tracking-[0.08em] text-slate-400">
           <tr>
             {columns.map((column) => (
@@ -64,7 +70,9 @@ export default function Table<T>({
             })
           )}
         </tbody>
-      </table>
+        </table>
+      </div>
+      {isLoading ? <Loading label={loadingLabel} overlay /> : null}
     </div>
   );
 }
