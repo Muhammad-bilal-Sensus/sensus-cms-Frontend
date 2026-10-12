@@ -6,8 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { previewModels, previewOems, specificationDefinitions } from "./previewCatalog";
 import {
   bodyTypeOptions,
-  formatMoney,
-  labelFor,
   slugify,
   statusOptions,
   type CatalogModel,
@@ -23,9 +21,9 @@ import Input from "@/components/ui/Input";
 import ModelWorkspace from "./components/ModelWorkspace";
 import Pagination from "@/components/ui/Pagination";
 import Select from "@/components/ui/Select";
-import Table, { type TableColumn } from "@/components/ui/Table";
+import Table from "@/components/ui/Table";
 import { Field } from "@/components/ui/Field";
-import { StatusBadge } from "./components/StatusBadge";
+import { modelColumns } from "./modelColumns";
 
 type Screen = { name: "list" } | { name: "create" } | { name: "model"; modelId: string };
 
@@ -37,20 +35,6 @@ const emptyDraft: ModelDraft = {
   bodyType: "suv",
   status: "draft",
 };
-
-function lowestPrice(model: CatalogModel) {
-  const trims = model.versions.flatMap((version) => version.trims);
-  if (trims.length === 0) return null;
-  return trims.reduce((lowest, trim) => (trim.price < lowest.price ? trim : lowest));
-}
-
-function yearLabel(model: CatalogModel) {
-  const years = model.versions.map((version) => version.modelYear);
-  if (years.length === 0) return "—";
-  const min = Math.min(...years);
-  const max = Math.max(...years);
-  return min === max ? String(min) : `${min}–${max}`;
-}
 
 function modelError(draft: ModelDraft, models: CatalogModel[], ignoreId?: string) {
   return schemaError(modelFormSchema(models, ignoreId), draft);
@@ -104,58 +88,8 @@ export default function ModelsPage() {
   const currentPage = Math.min(page, pageCount);
   const visibleModels = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const modelColumns = useMemo<TableColumn<CatalogModel>[]>(
-    () => [
-      {
-        id: "model",
-        header: "Model",
-        cell: (model) => (
-          <button
-            type="button"
-            onClick={() => setScreen({ name: "model", modelId: model.id })}
-            className="cursor-pointer text-left"
-          >
-            <span className="block font-medium text-slate-900">{model.name}</span>
-            <span className="block text-xs text-slate-400">{model.slug}</span>
-          </button>
-        ),
-      },
-      {
-        id: "oem",
-        header: "OEM",
-        cell: (model) => (
-          <span className="text-slate-600">{previewOems.find((item) => item.id === model.oemId)?.name}</span>
-        ),
-      },
-      {
-        id: "code",
-        header: "Code",
-        cell: (model) => <span className="text-slate-600">{model.code}</span>,
-      },
-      {
-        id: "body",
-        header: "Body type",
-        cell: (model) => <span className="text-slate-600">{labelFor(bodyTypeOptions, model.bodyType)}</span>,
-      },
-      {
-        id: "years",
-        header: "Years",
-        cell: (model) => <span className="text-slate-600">{yearLabel(model)}</span>,
-      },
-      {
-        id: "price",
-        header: "From",
-        cell: (model) => {
-          const price = lowestPrice(model);
-          return <span className="text-slate-900">{price ? formatMoney(price.price, price.currencyCode) : "—"}</span>;
-        },
-      },
-      {
-        id: "status",
-        header: "Status",
-        cell: (model) => <StatusBadge status={model.status} />,
-      },
-    ],
+  const columns = useMemo(
+    () => modelColumns((model) => setScreen({ name: "model", modelId: model.id })),
     [],
   );
 
@@ -412,7 +346,7 @@ export default function ModelsPage() {
 
           <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
             <Table
-              columns={modelColumns}
+              columns={columns}
               rows={visibleModels}
               getRowId={(model) => model.id}
               emptyLabel="No models match these filters."

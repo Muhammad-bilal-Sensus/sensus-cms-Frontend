@@ -6,6 +6,7 @@ export type MicrositeSettings = {
   currency?: string;
   contact_email?: string;
   theme?: string;
+  [key: string]: string | undefined;
 };
 
 export type CmsMicrosite = {
@@ -20,18 +21,12 @@ export type CmsMicrosite = {
   updated_at?: string | null;
 };
 
-export type MicrositeSettingsPayload = {
-  locale: string;
-  fallback_locale: string;
-  currency: string;
-  contact_email: string;
-  theme?: string;
-};
+export type MicrositeSettingsPayload = Record<string, string>;
 
 export type CreateMicrositePayload = {
   oem_id: number;
   name: string;
-  slug: string;
+  slug?: string;
   domain: string;
   settings: MicrositeSettingsPayload;
   status: OemStatus;

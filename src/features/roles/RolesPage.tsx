@@ -1,13 +1,15 @@
-import { useGetRolesQuery } from "@/redux/api/roleApi";
+import { useDeleteRoleMutation, useGetRolesQuery } from "@/redux/api/roleApi";
+import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { usePermission } from "@/access/usePermission";
 import Button from "@/components/ui/Button";
-import DeleteRoleModal from "./components/DeleteRoleModal";
+import ModalBox from "@/components/ui/ModalBox";
 import Input from "@/components/ui/Input";
-import Table, { type TableColumn } from "@/components/ui/Table";
+import DataTable from "@/components/ui/DataTable";
 import { ROUTES } from "@/constants/routes";
-import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import { roleColumns } from "./roleColumns";
 import type { CmsRole } from "./roleTypes";
 import { getApiErrorMessage } from "@/utils/apiError";
 
@@ -17,6 +19,26 @@ export default function RolesPage() {
   const canManage = can("roles.manage");
   const [search, setSearch] = useState("");
   const [deletingRole, setDeletingRole] = useState<CmsRole | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const waitForRefresh = useWaitForQueryRefresh();
+  const [deleteRole, deleteMutation] = useDeleteRoleMutation();
+  const isDeleting = deleteMutation.isLoading || refreshing;
+
+  async function submitDelete() {
+    if (isDeleting) return;
+    try {
+      if (!deletingRole) throw new Error("Choose a role to delete.");
+      const message = await deleteRole(deletingRole.id).unwrap();
+      setRefreshing(true);
+      toast.success(message);
+      await waitForRefresh();
+      setDeletingRole(null);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Could not delete the role."));
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   const rolesQuery = useGetRolesQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -34,63 +56,13 @@ export default function RolesPage() {
     });
   }, [rolesQuery.data, search]);
 
-  const columns = useMemo<TableColumn<CmsRole>[]>(
-    () => [
-      {
-        id: "name",
-        header: "Role",
-        cell: (role) => (
-          <button type="button" onClick={() => navigate(`${ROUTES.roles}/${role.id}`)} className="cursor-pointer text-left font-medium text-slate-900 hover:text-teal-800">
-            {role.name}
-          </button>
-        ),
-      },
-      {
-        id: "description",
-        header: "Description",
-        cell: (role) => <span className="block max-w-md truncate text-slate-600">{role.description || "—"}</span>,
-      },
-      {
-        id: "type",
-        header: "Type",
-        cell: (role) => (
-          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${role.is_system ? "bg-slate-100 text-slate-600" : "bg-[#dcecdf] text-[#287560]"}`}>
-            {role.is_system ? "System" : "Custom"}
-          </span>
-        ),
-      },
-      {
-        id: "permissions",
-        header: "Permissions",
-        cell: (role) => <span className="text-slate-600">{role.permissions.length}</span>,
-      },
-      {
-        id: "actions",
-        header: "",
-        cell: (role) => (
-          <span className="flex items-center justify-end gap-1">
-            <button
-              type="button"
-              aria-label={`Open ${role.name}`}
-              onClick={() => navigate(`${ROUTES.roles}/${role.id}`)}
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-            >
-              <PencilIcon />
-            </button>
-            {canManage && !role.is_system ? (
-              <button
-                type="button"
-                aria-label={`Delete ${role.name}`}
-                onClick={() => setDeletingRole(role)}
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
-              >
-                <TrashIcon />
-              </button>
-            ) : null}
-          </span>
-        ),
-      },
-    ],
+  const columns = useMemo(
+    () =>
+      roleColumns({
+        canManage,
+        onOpen: (role) => navigate(`${ROUTES.roles}/${role.id}`),
+        onDelete: setDeletingRole,
+      }),
     [canManage, navigate],
   );
 
@@ -123,29 +95,33 @@ export default function RolesPage() {
         </label>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        {errorMessage ? <p className="px-5 pt-4 text-sm text-rose-600">{errorMessage}</p> : null}
-        <div className="relative min-h-40" aria-busy={isLoading}>
-          <div className={isLoading ? "pointer-events-none opacity-50" : undefined}>
-            <Table
-              columns={columns}
-              rows={roles}
-              getRowId={(role) => String(role.id)}
-              emptyLabel={rolesQuery.isLoading ? "" : errorMessage ? "Roles could not be loaded." : "No roles match this search."}
-            />
-          </div>
-          {isLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-              <div className="flex items-center gap-3 text-sm text-slate-600">
-                <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-teal-700" />
-                Loading roles
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </section>
+      <DataTable
+        columns={columns}
+        rows={roles}
+        getRowId={(role) => String(role.id)}
+        emptyLabel={rolesQuery.isLoading ? "" : errorMessage ? "Roles could not be loaded." : "No roles match this search."}
+        isLoading={isLoading}
+        loadingLabel="Loading roles"
+        errorMessage={errorMessage}
+      />
 
-      <DeleteRoleModal role={deletingRole} onClose={() => setDeletingRole(null)} />
+      <ModalBox
+        open={Boolean(deletingRole)}
+        title="Delete role"
+        text={deletingRole ? `Delete ${deletingRole.name}?` : "Delete this role?"}
+        onClose={() => setDeletingRole(null)}
+        alert
+        buttons={[
+          { text: "Cancel", variant: "secondary", onClick: () => setDeletingRole(null), disabled: isDeleting },
+          {
+            text: isDeleting ? "Deleting..." : "Delete",
+            variant: "primary",
+            background: "#b44850",
+            onClick: () => void submitDelete(),
+            disabled: isDeleting,
+          },
+        ]}
+      />
     </div>
   );
 }

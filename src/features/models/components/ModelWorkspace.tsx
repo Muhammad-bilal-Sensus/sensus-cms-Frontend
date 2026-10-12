@@ -6,9 +6,6 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
   bodyTypeOptions,
   contentSectionOrder,
-  formatMoney,
-  labelFor,
-  powertrainOptions,
   statusOptions,
   type CatalogModel,
   type ContentSectionKey,
@@ -22,6 +19,7 @@ import Button from "@/components/ui/Button";
 import Table from "@/components/ui/Table";
 import Textarea from "@/components/ui/Textarea";
 import TrimModal from "./TrimModal";
+import { trimColumns } from "../trimColumns";
 import { Field } from "@/components/ui/Field";
 import { StatusBadge } from "./StatusBadge";
 
@@ -382,33 +380,7 @@ export default function ModelWorkspace({
                 </Button>
               </header>
               <Table
-                columns={[
-                  {
-                    id: "trim",
-                    header: "Trim",
-                    cell: (item) => <span className="font-medium text-slate-900">{item.name}</span>,
-                  },
-                  {
-                    id: "code",
-                    header: "Code",
-                    cell: (item) => <span className="text-slate-600">{item.code}</span>,
-                  },
-                  {
-                    id: "powertrain",
-                    header: "Powertrain",
-                    cell: (item) => <span className="text-slate-600">{labelFor(powertrainOptions, item.powertrainType)}</span>,
-                  },
-                  {
-                    id: "price",
-                    header: "Price",
-                    cell: (item) => <span className="text-slate-900">{formatMoney(item.price, item.currencyCode)}</span>,
-                  },
-                  {
-                    id: "status",
-                    header: "Status",
-                    cell: (item) => <StatusBadge status={item.status} />,
-                  },
-                ]}
+                columns={trimColumns}
                 rows={version.trims}
                 getRowId={(item) => item.id}
                 emptyLabel="No trims on this version"

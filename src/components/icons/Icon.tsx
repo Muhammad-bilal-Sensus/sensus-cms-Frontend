@@ -32,7 +32,8 @@ export type IconName =
   | "calendar"
   | "clock"
   | "megaphone"
-  | "clipboard";
+  | "clipboard"
+  | "plus";
 
 const icons: Record<IconName, ReactNode> = {
   bell: (
@@ -212,6 +213,7 @@ const icons: Record<IconName, ReactNode> = {
       <path d="M9 5V3h6v2M8.5 10h7M8.5 14h7M8.5 18h4" />
     </>
   ),
+  plus: <path d="M12 5v14M5 12h14" />,
 };
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {

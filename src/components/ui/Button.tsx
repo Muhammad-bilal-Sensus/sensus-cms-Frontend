@@ -1,6 +1,11 @@
 import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary";
+export const ButtonVariant = {
+  primary: "primary",
+  secondary: "secondary",
+} as const;
+
+export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
 
 type ButtonProps = {
   text?: string;
@@ -15,8 +20,8 @@ type ButtonProps = {
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick" | "color">;
 
 const variants: Record<ButtonVariant, { height: number; width: CSSProperties["width"]; color: string; background: string; border: string }> = {
-  primary: { height: 40, width: "auto", color: "#ffffff", background: "#0f766e", border: "none" },
-  secondary: { height: 40, width: "auto", color: "#334155", background: "#ffffff", border: "1px solid #cbd5e1" },
+  [ButtonVariant.primary]: { height: 40, width: "auto", color: "#ffffff", background: "#0f766e", border: "none" },
+  [ButtonVariant.secondary]: { height: 40, width: "auto", color: "#334155", background: "#ffffff", border: "1px solid #cbd5e1" },
 };
 
 export default function Button({
