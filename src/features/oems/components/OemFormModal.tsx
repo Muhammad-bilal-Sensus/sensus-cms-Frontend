@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/Field";
 import Modal from "@/components/ui/Modal";
 import { FormInput, FormSelect, FormTextarea } from "@/components/form/FormControls";
 import { useSchemaForm } from "@/hooks/useSchemaForm";
+import { oemCodeFromName } from "../oemCode";
 import { emptyOemForm, oemFormSchema, type OemFormValues } from "../oemSchemas";
 import { oemStatusOptions, toOemStatus, type CmsOem, type OemPayload } from "../oemTypes";
 
@@ -26,10 +27,10 @@ function formFromOem(oem: CmsOem): OemFormValues {
   };
 }
 
-function toPayload(values: OemFormValues): OemPayload {
+function toPayload(values: OemFormValues, generateCode: boolean): OemPayload {
   return {
     name: values.name.trim(),
-    code: values.code.trim().toUpperCase(),
+    code: generateCode ? oemCodeFromName(values.name) : values.code.trim(),
     description: values.description.trim(),
     status: values.status,
   };
@@ -59,7 +60,7 @@ export default function OemFormModal({ open, oemId, onClose }: OemFormModalProps
   async function submit(values: OemFormValues) {
     if (isSaving || isLoadingDetail) return;
     try {
-      const payload = toPayload(values);
+      const payload = toPayload(values, oemId === null);
       const result = oemId === null
         ? await createOem(payload).unwrap()
         : await updateOem({ id: oemId, payload }).unwrap();
@@ -92,21 +93,23 @@ export default function OemFormModal({ open, oemId, onClose }: OemFormModalProps
           Loading OEM
         </div>
       ) : (
-        <form onSubmit={form.submitForm(submit)} className="grid gap-2 [&_input]:h-8 [&_label]:gap-0.5 [&_select]:h-8" noValidate>
+        <form
+          onSubmit={(event) => {
+            if (oemId === null) form.setValue("code", oemCodeFromName(form.getValues("name")));
+            void form.submitForm(submit)(event);
+          }}
+          className="grid gap-2 [&_input]:h-8 [&_label]:gap-0.5 [&_select]:h-8"
+          noValidate
+        >
           {detailError ? <p className="text-sm text-rose-600">{detailError}</p> : null}
           <Field label="Name" error={errors.name?.message}>
             <FormInput form={form} name="name" htmlName="name" placeholder="Enter name" disabled={isSaving} />
           </Field>
-          <Field label="Code" error={errors.code?.message}>
-            <FormInput
-              form={form}
-              name="code"
-              htmlName="code"
-              placeholder="Enter code"
-              transform={(value) => value.toUpperCase()}
-              disabled={isSaving}
-            />
-          </Field>
+          {editing ? (
+            <Field label="Code" error={errors.code?.message}>
+              <FormInput form={form} name="code" htmlName="code" placeholder="Enter code" disabled={isSaving} />
+            </Field>
+          ) : null}
           <Field label="Description" error={errors.description?.message}>
             <FormTextarea form={form} name="description" htmlName="description" placeholder="Enter description" rows={3} disabled={isSaving} />
           </Field>

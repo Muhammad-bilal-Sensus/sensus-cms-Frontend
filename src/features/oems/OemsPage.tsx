@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useGetOemsQuery } from "@/redux/api/oemApi";
 import { usePermission } from "@/access/usePermission";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { Icon } from "@/components/icons/Icon";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Pagination from "@/components/ui/Pagination";
 import Select from "@/components/ui/Select";
 import Table, { type TableColumn } from "@/components/ui/Table";
+import MicrositePanel from "@/features/microsites/MicrositePanel";
 import DeleteOemModal from "./components/DeleteOemModal";
 import OemFormModal from "./components/OemFormModal";
 import { oemStatusLabel, oemStatusOptions, oemStatusTone, type CmsOem } from "./oemTypes";
@@ -101,6 +103,7 @@ export default function OemsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingOem, setDeletingOem] = useState<CmsOem | null>(null);
+  const [openOemId, setOpenOemId] = useState<number | null>(null);
   const debouncedSearch = useDebouncedValue(search);
 
   const filterKey = `${debouncedSearch}|${status}|${sort}|${perPage}`;
@@ -141,7 +144,15 @@ export default function OemsPage() {
       {
         id: "name",
         header: "Name",
-        cell: (oem) => <span className="font-medium text-slate-900">{oem.name}</span>,
+        cell: (oem) => (
+          <span className="flex items-center gap-2">
+            <Icon
+              name="chevronRight"
+              className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${openOemId === oem.id ? "rotate-90" : ""}`}
+            />
+            <span className="font-medium text-slate-900">{oem.name}</span>
+          </span>
+        ),
       },
       {
         id: "code",
@@ -178,7 +189,8 @@ export default function OemsPage() {
                 <button
                   type="button"
                   aria-label={`Edit ${oem.name}`}
-                  onClick={() => {
+                  onClick={(event) => {
+                    event.stopPropagation();
                     setEditingId(oem.id);
                     setFormOpen(true);
                   }}
@@ -191,7 +203,10 @@ export default function OemsPage() {
                 <button
                   type="button"
                   aria-label={`Delete ${oem.name}`}
-                  onClick={() => setDeletingOem(oem)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setDeletingOem(oem);
+                  }}
                   className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
                 >
                   <TrashIcon />
@@ -202,7 +217,7 @@ export default function OemsPage() {
         },
       },
     ],
-    [canDelete, canUpdate],
+    [canDelete, canUpdate, openOemId],
   );
 
   function closeForm() {
@@ -259,6 +274,10 @@ export default function OemsPage() {
               rows={rows}
               getRowId={(oem) => String(oem.id)}
               emptyLabel={oemsQuery.isLoading ? "" : errorMessage ? "OEMs could not be loaded." : "No OEMs match these filters."}
+              onRowClick={(oem) => setOpenOemId((current) => current === oem.id ? null : oem.id)}
+              selectedRowId={openOemId === null ? undefined : String(openOemId)}
+              expandedRowId={openOemId === null ? null : String(openOemId)}
+              renderExpanded={(oem) => <MicrositePanel oemId={oem.id} oemName={oem.name} />}
             />
           </div>
           {isLoading ? (
