@@ -16,9 +16,10 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, ""),
-  prepareHeaders: (headers) => {
+  prepareHeaders: (headers, { arg }) => {
     headers.set("Accept", "application/json");
-    headers.set("Content-Type", "application/json");
+    const body = typeof arg === "object" && arg !== null && "body" in arg ? arg.body : undefined;
+    if (!(body instanceof FormData)) headers.set("Content-Type", "application/json");
     const token = getAccessToken();
     if (token) headers.set("Authorization", getTokenType() + " " + token);
     return headers;
