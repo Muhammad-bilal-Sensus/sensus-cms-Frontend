@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Icon, TrashIcon } from "@/components/icons/Icon";
-import { oemStatusOptions, toOemStatus } from "@/features/oems/oemTypes";
+import { toOemStatus } from "@/features/oems/oemTypes";
 import { useCreateMicrositeMutation, useGetMicrositeQuery, useUpdateMicrositeMutation } from "@/redux/api/micrositeApi";
 import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
 import { getApiErrorMessage } from "@/utils/apiError";
@@ -10,7 +10,8 @@ import Button from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
-import { FormInput, FormSelect } from "@/components/form/FormControls";
+import { FormInput } from "@/components/form/FormControls";
+import { StatusFormSelect } from "@/components/ui/Status";
 import { useSchemaForm } from "@/hooks/useSchemaForm";
 import { emptyMicrositeForm, micrositeFormSchema, type MicrositeFormValues } from "../micrositeSchemas";
 import type { CmsMicrosite, CreateMicrositePayload, MicrositeSettings, MicrositeSettingsPayload, UpdateMicrositePayload } from "../micrositeTypes";
@@ -250,7 +251,7 @@ export default function MicrositeFormModal({ open, oemId, oemName, micrositeId, 
             <FormInput form={form} name="domain" htmlName="domain" placeholder="arcfox.example.com" disabled={isSaving} />
           </Field>
           <Field label="Status">
-            <FormSelect form={form} name="status" htmlName="status" options={oemStatusOptions} disabled={isSaving} />
+            <StatusFormSelect form={form} name="status" htmlName="status" disabled={isSaving} />
           </Field>
           <div className="grid gap-2 sm:col-span-2 sm:grid-cols-2">
             <p className="text-xs font-medium text-slate-500 sm:col-span-2">Settings</p>

@@ -1,13 +1,8 @@
 import { AppRole } from "@/access/roles";
 import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
 import type { CmsUser } from "./userTypes";
-
-const statusTone: Record<string, string> = {
-  active: "bg-[#dcecdf] text-[#287560]",
-  inactive: "bg-slate-100 text-slate-500",
-  suspended: "bg-[#f4dddd] text-[#b44850]",
-};
 
 function formatDateTime(value: string | null) {
   if (!value) return "—";
@@ -32,12 +27,6 @@ function actorLabel(actor: CmsUser["created_by"]) {
 function initials(user: CmsUser) {
   const letters = `${user.first_name?.[0] ?? ""}${user.last_name?.[0] ?? ""}`.toUpperCase();
   return letters || user.email[0]?.toUpperCase() || "?";
-}
-
-function StatusPill({ status }: { status: string }) {
-  const tone = statusTone[status] ?? "bg-slate-100 text-slate-500";
-  const label = status ? status.charAt(0).toUpperCase() + status.slice(1) : "Unknown";
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{label}</span>;
 }
 
 type UserColumnActions = {
@@ -81,7 +70,7 @@ export function userColumns({
     {
       id: "status",
       header: "Status",
-      cell: (user) => <StatusPill status={user.status} />,
+      cell: (user) => <StatusBadge status={user.status} />,
     },
     {
       id: "lastLogin",

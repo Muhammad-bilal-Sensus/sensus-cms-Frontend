@@ -7,11 +7,12 @@ import Button, { ButtonVariant } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import ModalBox from "@/components/ui/ModalBox";
 import { ModalAlign, ModalSize } from "@/components/ui/Modal";
-import { FormInput, FormSelect, FormTextarea } from "@/components/form/FormControls";
+import { FormInput, FormTextarea } from "@/components/form/FormControls";
+import { StatusFormSelect } from "@/components/ui/Status";
 import { useSchemaForm } from "@/hooks/useSchemaForm";
 import { oemCodeFromName } from "../oemCode";
 import { emptyOemForm, oemFormSchema, type OemFormValues } from "../oemSchemas";
-import { oemStatusOptions, toOemStatus, type CmsOem, type OemPayload } from "../oemTypes";
+import { toOemStatus, type CmsOem, type OemPayload } from "../oemTypes";
 
 const OemField = {
   name: "name",
@@ -146,7 +147,7 @@ export default function OemFormModal({ open, oemId, onClose }: OemFormModalProps
             <FormTextarea form={form} name={OemField.description} htmlName={OemField.description} placeholder={OemFormText.descriptionPlaceholder} rows={3} disabled={isSaving} />
           </Field>
           <Field label={OemFormText.status}>
-            <FormSelect form={form} name={OemField.status} htmlName={OemField.status} options={oemStatusOptions} disabled={isSaving} />
+            <StatusFormSelect form={form} name={OemField.status} htmlName={OemField.status} disabled={isSaving} />
           </Field>
           <Button variant={ButtonVariant.primary} type="submit" width="100%" height={34} disabled={isSaving || Boolean(detailError)}>
             {isSaving ? OemFormText.saving : OemFormText.submit}

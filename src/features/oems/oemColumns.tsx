@@ -1,6 +1,7 @@
 import { Icon, PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
-import { oemStatusLabel, oemStatusTone, type CmsOem } from "./oemTypes";
+import type { CmsOem } from "./oemTypes";
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "—";
@@ -13,11 +14,6 @@ function formatDateTime(value: string | null | undefined) {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
-}
-
-function StatusPill({ status }: { status: string }) {
-  const tone = oemStatusTone[status as keyof typeof oemStatusTone] ?? "bg-slate-100 text-slate-500";
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{oemStatusLabel(status)}</span>;
 }
 
 type OemColumnActions = {
@@ -60,7 +56,7 @@ export function oemColumns({ onEdit, onDelete, expandedOemId }: OemColumnActions
     {
       id: "status",
       header: "Status",
-      cell: (oem) => <StatusPill status={oem.status} />,
+      cell: (oem) => <StatusBadge status={oem.status} />,
     },
     {
       id: "created",

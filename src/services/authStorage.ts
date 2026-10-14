@@ -15,17 +15,24 @@ function isAuthUser(value: unknown): value is AuthUser {
   return typeof user.id === "number" && typeof user.email === "string" && user.email.length > 0 && typeof user.full_name === "string";
 }
 
+function splitScheme(token: string, tokenType: string) {
+  let value = token.trim();
+  let type = tokenType.trim() || "Bearer";
+  while (/^bearer\s+/i.test(value)) {
+    value = value.replace(/^bearer\s+/i, "");
+    type = "Bearer";
+  }
+  return { token: value, tokenType: type };
+}
+
 function readPersisted(): PersistedAuth | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as Partial<PersistedAuth>;
     if (typeof data.token !== "string" || !data.token || !isAuthUser(data.user)) return null;
-    return {
-      token: data.token,
-      tokenType: typeof data.tokenType === "string" && data.tokenType ? data.tokenType : "Bearer",
-      user: data.user,
-    };
+    const tokenType = typeof data.tokenType === "string" && data.tokenType ? data.tokenType : "Bearer";
+    return { ...splitScheme(data.token, tokenType), user: data.user };
   } catch {
     return null;
   }
@@ -44,7 +51,7 @@ export function readSession(): AuthUser | null {
 }
 
 export function saveAuth(token: string, user: AuthUser, tokenType = "Bearer") {
-  const payload: PersistedAuth = { token, tokenType, user };
+  const payload: PersistedAuth = { ...splitScheme(token, tokenType), user };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   localStorage.removeItem(LEGACY_KEY);
 }

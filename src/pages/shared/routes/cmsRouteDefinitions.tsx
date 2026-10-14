@@ -11,6 +11,7 @@ import SectionPage from "@/layouts/SectionPage";
 import { allLinks } from "@/layouts/navigation";
 import RequireAccess from "@/routes/RequireAccess";
 import OemsPage from "@/features/oems/OemsPage";
+import BranchesPage from "@/features/branches/BranchesPage";
 
 export type CmsRouteDefinition = {
   path: string;
@@ -21,6 +22,7 @@ export type CmsRouteDefinition = {
 const featurePages: Readonly<Partial<Record<string, ComponentType>>> = {
   [ROUTES.home]: DashboardPage,
   [ROUTES.oems]: OemsPage,
+  [ROUTES.branches]: BranchesPage,
   [ROUTES.models]: ModelsPage,
   [ROUTES.users]: UsersPage,
   [ROUTES.roles]: RolesPage,

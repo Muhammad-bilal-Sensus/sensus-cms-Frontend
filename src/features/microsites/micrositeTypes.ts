@@ -37,3 +37,26 @@ export type UpdateMicrositePayload = Omit<CreateMicrositePayload, "oem_id">;
 export type MicrositeMutationResult = { microsite: CmsMicrosite; message: string };
 export type UpdateMicrositeArgs = { id: number; payload: UpdateMicrositePayload };
 export type FetchMicrositesParams = { oemId: number };
+
+export const micrositeBranchLinkStatuses = ["active", "inactive"] as const;
+
+export type MicrositeBranchLinkStatus = (typeof micrositeBranchLinkStatuses)[number];
+
+export type MicrositeBranchLink = {
+  branch_id: number;
+  supports_sales: boolean;
+  supports_service: boolean;
+  supports_test_drive: boolean;
+  sort_order: number;
+  status: MicrositeBranchLinkStatus;
+};
+
+export type SyncMicrositeBranchesArgs = {
+  micrositeId: number;
+  branches: MicrositeBranchLink[];
+};
+
+export type SyncMicrositeBranchesResult = {
+  links: MicrositeBranchLink[];
+  message: string;
+};

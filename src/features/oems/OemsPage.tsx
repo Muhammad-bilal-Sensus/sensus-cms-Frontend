@@ -11,7 +11,8 @@ import Select from "@/components/ui/Select";
 import MicrositePanel from "@/features/microsites/MicrositePanel";
 import OemFormModal from "./components/OemFormModal";
 import { oemColumns } from "./oemColumns";
-import { oemStatusOptions, type CmsOem } from "./oemTypes";
+import { StatusSelect } from "@/components/ui/Status";
+import type { CmsOem } from "./oemTypes";
 
 const pageSizeOptions = [10, 15, 25, 50];
 
@@ -166,7 +167,7 @@ export default function OemsPage() {
           </label>
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Status
-            <Select value={status} onChange={setStatus} placeholder="All statuses" options={oemStatusOptions} />
+            <StatusSelect value={status} onChange={setStatus} placeholder="All statuses" />
           </label>
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Sort

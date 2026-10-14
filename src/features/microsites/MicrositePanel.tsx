@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import Loading from "@/components/ui/Loading";
 import ModalBox from "@/components/ui/ModalBox";
 import Table from "@/components/ui/Table";
+import MicrositeBranchSyncModal from "./components/MicrositeBranchSyncModal";
 import MicrositeFormModal from "./components/MicrositeFormModal";
 import { micrositeColumns } from "./micrositeColumns";
 import type { CmsMicrosite } from "./micrositeTypes";
@@ -19,6 +20,7 @@ type MicrositePanelProps = {
 export default function MicrositePanel({ oemId, oemName }: MicrositePanelProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [syncing, setSyncing] = useState<CmsMicrosite | null>(null);
   const [deleting, setDeleting] = useState<CmsMicrosite | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const waitForRefresh = useWaitForQueryRefresh();
@@ -48,6 +50,7 @@ export default function MicrositePanel({ oemId, oemName }: MicrositePanelProps) 
   const columns = useMemo(
     () =>
       micrositeColumns({
+        onSync: setSyncing,
         onEdit: (site) => {
           setEditingId(site.id);
           setFormOpen(true);
@@ -85,6 +88,13 @@ export default function MicrositePanel({ oemId, oemName }: MicrositePanelProps) 
         />
         {micrositesQuery.isFetching ? <Loading label="Loading microsites" overlay /> : null}
       </div>
+      {syncing ? (
+        <MicrositeBranchSyncModal
+          open
+          microsite={syncing}
+          onClose={() => setSyncing(null)}
+        />
+      ) : null}
       <MicrositeFormModal
         open={formOpen}
         oemId={oemId}
