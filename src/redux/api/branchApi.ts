@@ -31,6 +31,8 @@ export const branchApi = cmsApi.injectEndpoints({
         const city = filters.city?.trim();
         if (city) params.city = city;
         if (filters.status) params.status = filters.status;
+        if (filters.sortBy) params.sort_by = filters.sortBy;
+        if (filters.sortDir) params.sort_dir = filters.sortDir;
         return {
           url: API_PATH.Branches,
           params,

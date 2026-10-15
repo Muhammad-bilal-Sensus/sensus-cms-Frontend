@@ -1,4 +1,5 @@
 import { Icon, PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import SortHeader from "@/components/ui/SortHeader";
 import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
 import type { CmsOem } from "./oemTypes";
@@ -17,16 +18,18 @@ function formatDateTime(value: string | null | undefined) {
 }
 
 type OemColumnActions = {
+  sort: string;
+  onSort: (sort: string) => void;
   onEdit: (oem: CmsOem) => void;
   onDelete: (oem: CmsOem) => void;
   expandedOemId?: number | null;
 };
 
-export function oemColumns({ onEdit, onDelete, expandedOemId }: OemColumnActions): TableColumn<CmsOem>[] {
+export function oemColumns({ sort, onSort, onEdit, onDelete, expandedOemId }: OemColumnActions): TableColumn<CmsOem>[] {
   return [
     {
       id: "name",
-      header: "Name",
+      header: <SortHeader label="Name" field="name" sort={sort} onSort={onSort} />,
       cell: (oem) => (
         <span className="flex items-center gap-2">
           {expandedOemId !== undefined ? (
@@ -41,7 +44,7 @@ export function oemColumns({ onEdit, onDelete, expandedOemId }: OemColumnActions
     },
     {
       id: "code",
-      header: "Code",
+      header: <SortHeader label="Code" field="code" sort={sort} onSort={onSort} />,
       cell: (oem) => <span className="font-mono text-xs text-slate-600">{oem.code}</span>,
     },
     {
@@ -60,7 +63,7 @@ export function oemColumns({ onEdit, onDelete, expandedOemId }: OemColumnActions
     },
     {
       id: "created",
-      header: "Created",
+      header: <SortHeader label="Created" field="created_at" sort={sort} onSort={onSort} />,
       cell: (oem) => <span className="whitespace-nowrap text-slate-600">{formatDateTime(oem.created_at)}</span>,
     },
     {

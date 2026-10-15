@@ -34,18 +34,18 @@ export default function Select({
   const style = sizes[size];
 
   return (
-    <div className={`relative ${size === "md" ? "w-full" : "inline-flex"}`}>
+    <div className={`relative rounded-full border border-slate-300 bg-white focus-within:border-teal-700 focus-within:ring-2 focus-within:ring-teal-700/10 ${size === "md" ? "w-full" : "inline-flex"}`}>
       <select
         {...nativeProps}
         name={name}
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
-        className={`${style.field} appearance-none rounded-full border border-slate-300 bg-white font-normal text-slate-700 outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/10 disabled:cursor-not-allowed disabled:opacity-50`}
+        className={`${style.field} appearance-none border-0 bg-transparent font-normal text-slate-700 outline-none disabled:cursor-not-allowed disabled:opacity-50`}
       >
-        {placeholder ? <option value="">{placeholder}</option> : null}
+        {placeholder ? <option value="" className="bg-white text-slate-700">{placeholder}</option> : null}
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} className="bg-white text-slate-700">
             {option.label}
           </option>
         ))}

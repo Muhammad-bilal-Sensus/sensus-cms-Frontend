@@ -7,24 +7,12 @@ import Button, { ButtonVariant } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import DataTable from "@/components/ui/DataTable";
 import ModalBox from "@/components/ui/ModalBox";
-import Select from "@/components/ui/Select";
 import BranchFormModal from "./components/BranchFormModal";
 import { branchColumns } from "./branchColumns";
 import { StatusSelect } from "@/components/ui/Status";
-import type { CmsBranch } from "./branchTypes";
+import type { BranchSortBy, BranchSortDir, CmsBranch } from "./branchTypes";
 
 const pageSizeOptions = [10, 15, 25, 50];
-
-const sortOptions = [
-  { value: "name:asc", label: "Name A–Z" },
-  { value: "name:desc", label: "Name Z–A" },
-  { value: "code:asc", label: "Code A–Z" },
-  { value: "code:desc", label: "Code Z–A" },
-  { value: "city:asc", label: "City A–Z" },
-  { value: "city:desc", label: "City Z–A" },
-  { value: "created_at:desc", label: "Newest first" },
-  { value: "created_at:asc", label: "Oldest first" },
-];
 
 function useDebouncedValue(value: string, delay = 350) {
   const [debounced, setDebounced] = useState(value);
@@ -37,22 +25,13 @@ function useDebouncedValue(value: string, delay = 350) {
   return debounced;
 }
 
-function compareText(left: string, right: string, direction: string) {
-  const factor = direction === "desc" ? -1 : 1;
-  return left.localeCompare(right) * factor;
-}
+const branchSortFields: readonly BranchSortBy[] = ["name", "code", "city", "phone", "status"];
 
-function compareBranches(left: CmsBranch, right: CmsBranch, sort: string) {
-  const [field, direction] = sort.split(":");
-  if (field === "code") return compareText(left.code, right.code, direction);
-  if (field === "city") return compareText(left.city, right.city, direction);
-  if (field === "created_at") {
-    const leftTime = left.created_at ? Date.parse(left.created_at) : 0;
-    const rightTime = right.created_at ? Date.parse(right.created_at) : 0;
-    const factor = direction === "desc" ? -1 : 1;
-    return (leftTime - rightTime) * factor;
-  }
-  return compareText(left.name, right.name, direction);
+function parseSort(value: string): { sortBy: BranchSortBy; sortDir: BranchSortDir } {
+  const [field, direction] = value.split(":");
+  const sortBy = branchSortFields.includes(field as BranchSortBy) ? field as BranchSortBy : "name";
+  const sortDir: BranchSortDir = direction === "desc" ? "desc" : "asc";
+  return { sortBy, sortDir };
 }
 
 export default function BranchesPage() {
@@ -95,9 +74,10 @@ export default function BranchesPage() {
     setPage(1);
   }
   const requestPage = syncedFilterKey === filterKey ? page : 1;
+  const { sortBy, sortDir } = parseSort(sort);
 
   const branchesQuery = useGetBranchesQuery(
-    { city: debouncedCity, status },
+    { city: debouncedCity, status, sortBy, sortDir },
     { refetchOnMountOrArgChange: true, refetchOnFocus: true, refetchOnReconnect: true },
   );
 
@@ -106,16 +86,14 @@ export default function BranchesPage() {
   const filtered = useMemo(() => {
     const needle = debouncedSearch.trim().toLowerCase();
     const cityNeedle = debouncedCity.trim().toLowerCase();
-    return branches
-      .filter((branch) => {
-        const haystack = `${branch.name} ${branch.code} ${branch.city} ${branch.phone ?? ""}`.toLowerCase();
-        const matchesSearch = !needle || haystack.includes(needle);
-        const matchesCity = !cityNeedle || branch.city.toLowerCase().includes(cityNeedle);
-        const matchesStatus = !status || branch.status === status;
-        return matchesSearch && matchesCity && matchesStatus;
-      })
-      .sort((left, right) => compareBranches(left, right, sort));
-  }, [branches, debouncedCity, debouncedSearch, sort, status]);
+    return branches.filter((branch) => {
+      const haystack = `${branch.name} ${branch.code} ${branch.city} ${branch.phone ?? ""}`.toLowerCase();
+      const matchesSearch = !needle || haystack.includes(needle);
+      const matchesCity = !cityNeedle || branch.city.toLowerCase().includes(cityNeedle);
+      const matchesStatus = !status || branch.status === status;
+      return matchesSearch && matchesCity && matchesStatus;
+    });
+  }, [branches, debouncedCity, debouncedSearch, status]);
 
   const total = filtered.length;
   const pageCount = Math.max(1, Math.ceil(total / perPage));
@@ -127,13 +105,15 @@ export default function BranchesPage() {
   const columns = useMemo(
     () =>
       branchColumns({
+        sort,
+        onSort: setSort,
         onEdit: (branch) => {
           setEditingId(branch.id);
           setFormOpen(true);
         },
         onDelete: setDeletingBranch,
       }),
-    [],
+    [sort],
   );
 
   function closeForm() {
@@ -165,7 +145,7 @@ export default function BranchesPage() {
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Search
             <Input value={search} onChange={setSearch} placeholder="Name, code, city, or phone" />
@@ -177,10 +157,6 @@ export default function BranchesPage() {
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Status
             <StatusSelect value={status} onChange={setStatus} placeholder="All statuses" />
-          </label>
-          <label className="grid gap-1 text-xs font-medium text-slate-600">
-            Sort
-            <Select value={sort} onChange={setSort} options={sortOptions} />
           </label>
         </div>
       </section>

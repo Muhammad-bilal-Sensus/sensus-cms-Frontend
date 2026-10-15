@@ -39,4 +39,11 @@ export type BranchPayload = {
 
 export type BranchMutationResult = { branch: CmsBranch; message: string };
 export type UpdateBranchArgs = { id: number; payload: BranchPayload };
-export type FetchBranchesParams = { city?: string; status?: string };
+export type BranchSortBy = "name" | "code" | "city" | "phone" | "status";
+export type BranchSortDir = "asc" | "desc";
+export type FetchBranchesParams = {
+  city?: string;
+  status?: string;
+  sortBy?: BranchSortBy;
+  sortDir?: BranchSortDir;
+};

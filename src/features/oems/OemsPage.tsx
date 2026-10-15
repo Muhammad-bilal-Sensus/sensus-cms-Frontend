@@ -7,7 +7,6 @@ import Button, { ButtonVariant } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import DataTable from "@/components/ui/DataTable";
 import ModalBox from "@/components/ui/ModalBox";
-import Select from "@/components/ui/Select";
 import MicrositePanel from "@/features/microsites/MicrositePanel";
 import OemFormModal from "./components/OemFormModal";
 import { oemColumns } from "./oemColumns";
@@ -15,15 +14,6 @@ import { StatusSelect } from "@/components/ui/Status";
 import type { CmsOem } from "./oemTypes";
 
 const pageSizeOptions = [10, 15, 25, 50];
-
-const sortOptions = [
-  { value: "name:asc", label: "Name A–Z" },
-  { value: "name:desc", label: "Name Z–A" },
-  { value: "code:asc", label: "Code A–Z" },
-  { value: "code:desc", label: "Code Z–A" },
-  { value: "created_at:desc", label: "Newest first" },
-  { value: "created_at:asc", label: "Oldest first" },
-];
 
 function useDebouncedValue(value: string, delay = 350) {
   const [debounced, setDebounced] = useState(value);
@@ -121,6 +111,8 @@ export default function OemsPage() {
   const columns = useMemo(
     () =>
       oemColumns({
+        sort,
+        onSort: setSort,
         onEdit: (oem) => {
           setEditingId(oem.id);
           setFormOpen(true);
@@ -128,7 +120,7 @@ export default function OemsPage() {
         onDelete: setDeletingOem,
         expandedOemId: openOemId,
       }),
-    [openOemId],
+    [openOemId, sort],
   );
 
   function closeForm() {
@@ -160,7 +152,7 @@ export default function OemsPage() {
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2">
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Search
             <Input value={search} onChange={setSearch} placeholder="Name, code, or description" />
@@ -168,10 +160,6 @@ export default function OemsPage() {
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Status
             <StatusSelect value={status} onChange={setStatus} placeholder="All statuses" />
-          </label>
-          <label className="grid gap-1 text-xs font-medium text-slate-600">
-            Sort
-            <Select value={sort} onChange={setSort} options={sortOptions} />
           </label>
         </div>
       </section>

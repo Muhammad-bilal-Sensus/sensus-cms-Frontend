@@ -1,5 +1,6 @@
 import { AppRole } from "@/access/roles";
 import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import SortHeader from "@/components/ui/SortHeader";
 import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
 import type { CmsUser } from "./userTypes";
@@ -30,6 +31,8 @@ function initials(user: CmsUser) {
 }
 
 type UserColumnActions = {
+  sort: string;
+  onSort: (sort: string) => void;
   canEdit: boolean;
   canDelete: boolean;
   currentUserId?: number;
@@ -39,6 +42,8 @@ type UserColumnActions = {
 };
 
 export function userColumns({
+  sort,
+  onSort,
   canEdit,
   canDelete,
   currentUserId,
@@ -49,7 +54,7 @@ export function userColumns({
   return [
     {
       id: "user",
-      header: "User",
+      header: <SortHeader label="User" field="first_name" sort={sort} onSort={onSort} />,
       cell: (user) => (
         <span className="flex items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#dcecdf] text-xs font-semibold text-[#287560]">
@@ -79,7 +84,7 @@ export function userColumns({
     },
     {
       id: "created",
-      header: "Created",
+      header: <SortHeader label="Created" field="created_at" sort={sort} onSort={onSort} />,
       cell: (user) => <span className="whitespace-nowrap text-slate-600">{formatDateTime(user.created_at)}</span>,
     },
     {

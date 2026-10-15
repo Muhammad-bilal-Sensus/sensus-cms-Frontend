@@ -3,7 +3,7 @@ import Loading from "./Loading";
 
 export type TableColumn<T> = {
   id: string;
-  header: string;
+  header: ReactNode;
   cell: (row: T) => ReactNode;
 };
 

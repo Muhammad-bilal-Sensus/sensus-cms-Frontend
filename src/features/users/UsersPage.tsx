@@ -28,15 +28,6 @@ const statusOptions = [
   { value: "suspended", label: "Suspended" },
 ];
 
-const sortOptions = [
-  { value: "created_at:desc", label: "Newest first" },
-  { value: "created_at:asc", label: "Oldest first" },
-  { value: "first_name:asc", label: "Name A–Z" },
-  { value: "first_name:desc", label: "Name Z–A" },
-  { value: "email:asc", label: "Email A–Z" },
-  { value: "email:desc", label: "Email Z–A" },
-];
-
 function useDebouncedValue(value: string, delay = 350) {
   const [debounced, setDebounced] = useState(value);
 
@@ -136,6 +127,8 @@ export default function UsersPage() {
   const columns = useMemo(
     () =>
       userColumns({
+        sort,
+        onSort: setSort,
         canEdit: canEditUser,
         canDelete: canDeleteUser,
         currentUserId,
@@ -143,7 +136,7 @@ export default function UsersPage() {
         onEdit: setEditingUser,
         onDelete: setDeletingUser,
       }),
-    [canDeleteUser, canEditUser, currentUserId, isSuperAdmin],
+    [canDeleteUser, canEditUser, currentUserId, isSuperAdmin, sort],
   );
 
   const roleOptions = (rolesQuery.data ?? []).map((role) => ({
@@ -171,7 +164,7 @@ export default function UsersPage() {
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Search
             <Input value={search} onChange={setSearch} placeholder="Name or email" />
@@ -189,10 +182,6 @@ export default function UsersPage() {
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Status
             <Select value={status} onChange={setStatus} placeholder="All statuses" options={statusOptions} />
-          </label>
-          <label className="grid gap-1 text-xs font-medium text-slate-600">
-            Sort
-            <Select value={sort} onChange={setSort} options={sortOptions} />
           </label>
         </div>
       </section>
