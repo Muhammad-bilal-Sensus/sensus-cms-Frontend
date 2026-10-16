@@ -1,43 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useDeleteOemMutation, useGetOemsQuery } from "@/redux/api/oemApi";
 import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { compareText } from "@/utils/compareText";
 import Button, { ButtonVariant } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import DataTable from "@/components/ui/DataTable";
 import ModalBox from "@/components/ui/ModalBox";
-import Select from "@/components/ui/Select";
+import MicrositePanel from "@/features/microsites/MicrositePanel";
 import OemFormModal from "./components/OemFormModal";
 import { oemColumns } from "./oemColumns";
-import { oemStatusOptions, type CmsOem } from "./oemTypes";
+import { StatusSelect } from "@/components/ui/Status";
+import type { CmsOem } from "./oemTypes";
 
 const pageSizeOptions = [10, 15, 25, 50];
-
-const sortOptions = [
-  { value: "name:asc", label: "Name A–Z" },
-  { value: "name:desc", label: "Name Z–A" },
-  { value: "code:asc", label: "Code A–Z" },
-  { value: "code:desc", label: "Code Z–A" },
-  { value: "created_at:desc", label: "Newest first" },
-  { value: "created_at:asc", label: "Oldest first" },
-];
-
-function useDebouncedValue(value: string, delay = 350) {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(value), delay);
-    return () => window.clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
-
-function compareText(left: string, right: string, direction: string) {
-  const factor = direction === "desc" ? -1 : 1;
-  return left.localeCompare(right) * factor;
-}
 
 function compareOems(left: CmsOem, right: CmsOem, sort: string) {
   const [field, direction] = sort.split(":");
@@ -60,11 +38,12 @@ export default function OemsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingOem, setDeletingOem] = useState<CmsOem | null>(null);
+  const [openOemId, setOpenOemId] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const waitForRefresh = useWaitForQueryRefresh();
   const [deleteOem, deleteMutation] = useDeleteOemMutation();
   const isDeleting = deleteMutation.isLoading || refreshing;
-  const debouncedSearch = useDebouncedValue(search);
+  const debouncedSearch = useDebounce(search);
 
   async function submitDelete() {
     if (isDeleting) return;
@@ -118,13 +97,15 @@ export default function OemsPage() {
   const columns = useMemo(
     () =>
       oemColumns({
+        sort,
+        onSort: setSort,
         onEdit: (oem) => {
           setEditingId(oem.id);
           setFormOpen(true);
         },
         onDelete: setDeletingOem,
       }),
-    [],
+    [sort],
   );
 
   function closeForm() {
@@ -156,18 +137,14 @@ export default function OemsPage() {
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2">
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Search
             <Input value={search} onChange={setSearch} placeholder="Name, code, or description" />
           </label>
           <label className="grid gap-1 text-xs font-medium text-slate-600">
             Status
-            <Select value={status} onChange={setStatus} placeholder="All statuses" options={oemStatusOptions} />
-          </label>
-          <label className="grid gap-1 text-xs font-medium text-slate-600">
-            Sort
-            <Select value={sort} onChange={setSort} options={sortOptions} />
+            <StatusSelect value={status} onChange={setStatus} placeholder="All statuses" />
           </label>
         </div>
       </section>
@@ -180,6 +157,11 @@ export default function OemsPage() {
         isLoading={isLoading}
         loadingLabel="Loading OEMs"
         errorMessage={errorMessage}
+        onRowClick={(oem) => setOpenOemId((current) => (current === oem.id ? null : oem.id))}
+        selectedRowId={openOemId === null ? undefined : String(openOemId)}
+        expandedRowId={openOemId === null ? null : String(openOemId)}
+        renderExpanded={(oem) => <MicrositePanel oemId={oem.id} oemName={oem.name} />}
+        expandLabel={(oem, expanded) => `${expanded ? "Hide" : "Show"} microsites for ${oem.name}`}
         pagination={{
           page: currentPage,
           pageSize: perPage,

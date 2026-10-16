@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Loading from "./Loading";
 import Pagination from "./Pagination";
 import Table, { type TableColumn } from "./Table";
@@ -24,6 +25,9 @@ type DataTableProps<T> = {
   pagination?: DataTablePagination;
   onRowClick?: (row: T) => void;
   selectedRowId?: string;
+  expandedRowId?: string | null;
+  renderExpanded?: (row: T) => ReactNode;
+  expandLabel?: (row: T, expanded: boolean) => string;
 };
 
 export default function DataTable<T>({
@@ -37,6 +41,9 @@ export default function DataTable<T>({
   pagination,
   onRowClick,
   selectedRowId,
+  expandedRowId,
+  renderExpanded,
+  expandLabel,
 }: DataTableProps<T>) {
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -50,6 +57,9 @@ export default function DataTable<T>({
             emptyLabel={emptyLabel}
             onRowClick={onRowClick}
             selectedRowId={selectedRowId}
+            expandedRowId={expandedRowId}
+            renderExpanded={renderExpanded}
+            expandLabel={expandLabel}
           />
         </div>
         {isLoading ? <Loading label={loadingLabel} overlay /> : null}

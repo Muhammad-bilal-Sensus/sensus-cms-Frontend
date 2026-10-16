@@ -1,26 +1,10 @@
 import { AppRole } from "@/access/roles";
-import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import Button, { ButtonVariant } from "@/components/ui/Button";
+import SortHeader from "@/components/ui/SortHeader";
+import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
+import { formatDateTime } from "@/utils/formatDateTime";
 import type { CmsUser } from "./userTypes";
-
-const statusTone: Record<string, string> = {
-  active: "bg-[#dcecdf] text-[#287560]",
-  inactive: "bg-slate-100 text-slate-500",
-  suspended: "bg-[#f4dddd] text-[#b44850]",
-};
-
-function formatDateTime(value: string | null) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
 
 function actorLabel(actor: CmsUser["created_by"]) {
   if (!actor) return "—";
@@ -34,13 +18,9 @@ function initials(user: CmsUser) {
   return letters || user.email[0]?.toUpperCase() || "?";
 }
 
-function StatusPill({ status }: { status: string }) {
-  const tone = statusTone[status] ?? "bg-slate-100 text-slate-500";
-  const label = status ? status.charAt(0).toUpperCase() + status.slice(1) : "Unknown";
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{label}</span>;
-}
-
 type UserColumnActions = {
+  sort: string;
+  onSort: (sort: string) => void;
   canEdit: boolean;
   canDelete: boolean;
   currentUserId?: number;
@@ -50,6 +30,8 @@ type UserColumnActions = {
 };
 
 export function userColumns({
+  sort,
+  onSort,
   canEdit,
   canDelete,
   currentUserId,
@@ -60,7 +42,7 @@ export function userColumns({
   return [
     {
       id: "user",
-      header: "User",
+      header: <SortHeader label="User" field="first_name" sort={sort} onSort={onSort} />,
       cell: (user) => (
         <span className="flex items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#dcecdf] text-xs font-semibold text-[#287560]">
@@ -81,7 +63,7 @@ export function userColumns({
     {
       id: "status",
       header: "Status",
-      cell: (user) => <StatusPill status={user.status} />,
+      cell: (user) => <StatusBadge status={user.status} />,
     },
     {
       id: "lastLogin",
@@ -90,7 +72,7 @@ export function userColumns({
     },
     {
       id: "created",
-      header: "Created",
+      header: <SortHeader label="Created" field="created_at" sort={sort} onSort={onSort} />,
       cell: (user) => <span className="whitespace-nowrap text-slate-600">{formatDateTime(user.created_at)}</span>,
     },
     {
@@ -114,24 +96,10 @@ export function userColumns({
         return (
           <span className="flex items-center justify-end gap-1">
             {showEdit ? (
-              <button
-                type="button"
-                aria-label={`Edit ${user.full_name}`}
-                onClick={() => onEdit(user)}
-                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-              >
-                <PencilIcon />
-              </button>
+              <Button variant={ButtonVariant.edit} aria-label={`Edit ${user.full_name}`} onClick={() => onEdit(user)} />
             ) : null}
             {showDelete ? (
-              <button
-                type="button"
-                aria-label={`Delete ${user.full_name}`}
-                onClick={() => onDelete(user)}
-                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
-              >
-                <TrashIcon />
-              </button>
+              <Button variant={ButtonVariant.delete} aria-label={`Delete ${user.full_name}`} onClick={() => onDelete(user)} />
             ) : null}
           </span>
         );

@@ -100,11 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const previous = readSession();
         const result = await requestLogin({ email, password }).unwrap();
-        const tokenType = result.token_type || "Bearer";
         const localProfile = previous?.id === result.user.id ? previous : null;
-        // Cached private data belongs to the previous authenticated session.
         dispatch(cmsApi.util.resetApiState());
-        saveAuth(result.token, toAuthUser(result.user, localProfile), tokenType);
+        saveAuth(result.token, toAuthUser(result.user, localProfile));
         setToken(result.token);
 
         try {
@@ -113,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             forceRefetch: true,
           })).unwrap();
           const next = toAuthUser(apiUser, localProfile);
-          saveAuth(result.token, next, tokenType);
+          saveAuth(result.token, next);
           setUser(next);
           return result.message;
         } catch (error) {

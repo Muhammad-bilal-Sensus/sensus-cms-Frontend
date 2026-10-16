@@ -13,12 +13,14 @@ export type IconName =
   | "moon"
   | "headset"
   | "refresh"
+  | "sync"
   | "search"
   | "user"
   | "building"
   | "users"
   | "card"
   | "pin"
+  | "branches"
   | "target"
   | "settings"
   | "chevronLeft"
@@ -32,7 +34,9 @@ export type IconName =
   | "calendar"
   | "clock"
   | "megaphone"
-  | "clipboard";
+  | "clipboard"
+  | "plus"
+  | "layers";
 
 const icons: Record<IconName, ReactNode> = {
   bell: (
@@ -92,6 +96,14 @@ const icons: Record<IconName, ReactNode> = {
       <path d="M16 4h4v4" />
     </>
   ),
+  sync: (
+    <>
+      <path d="M20 12a8 8 0 0 1-13.7 5.6L4 16" />
+      <path d="M4 20v-4h4" />
+      <path d="M4 12a8 8 0 0 1 13.7-5.6L20 8" />
+      <path d="M16 4h4v4" />
+    </>
+  ),
   headset: (
     <>
       <path d="M4 13a8 8 0 0 1 16 0" />
@@ -138,6 +150,7 @@ const icons: Record<IconName, ReactNode> = {
       <circle cx="12" cy="10" r="2.2" />
     </>
   ),
+  branches: <BranchesGlyph />,
   target: (
     <>
       <circle cx="12" cy="12" r="8" />
@@ -212,7 +225,38 @@ const icons: Record<IconName, ReactNode> = {
       <path d="M9 5V3h6v2M8.5 10h7M8.5 14h7M8.5 18h4" />
     </>
   ),
+  plus: <path d="M12 5v14M5 12h14" />,
+  layers: (
+    <>
+      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 16 9 5 9-5" />
+    </>
+  ),
 };
+
+function BranchesGlyph() {
+  return (
+    <>
+      <path d="M4 10.5 8.5 7 13 10.5V20H4v-9.5Z" />
+      <path d="M13 20V10.5L17.5 7 22 10.5V20h-9Z" />
+      <path d="M6.2 20v-3.2h2.2V20" />
+      <path d="M15.6 20v-3.2h2.2V20" />
+    </>
+  );
+}
+
+export function BranchesIcon({ className }: { className?: string }) {
+  return <Icon name="branches" className={className} />;
+}
+
+export function SyncIcon({ className }: { className?: string }) {
+  return <Icon name="sync" className={className} />;
+}
+
+export function LayersIcon({ className }: { className?: string }) {
+  return <Icon name="layers" className={className} />;
+}
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   return (

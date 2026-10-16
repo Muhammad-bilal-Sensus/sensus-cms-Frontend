@@ -83,8 +83,8 @@ export default function DashboardPage() {
 				</div>
 				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:min-w-[420px]">
 					<label className="grid gap-1 text-xs font-medium text-slate-600">
-						Filter location
-						<Select value={location} onChange={setLocation} placeholder="All locations" options={[]} />
+						Filter branches
+						<Select value={location} onChange={setLocation} placeholder="All branches" options={[]} />
 					</label>
 					<label className="grid gap-1 text-xs font-medium text-slate-600">
 						Team members

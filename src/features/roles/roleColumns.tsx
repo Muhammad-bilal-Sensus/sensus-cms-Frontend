@@ -1,4 +1,4 @@
-import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import Button, { ButtonVariant } from "@/components/ui/Button";
 import type { TableColumn } from "@/components/ui/Table";
 import type { CmsRole } from "./roleTypes";
 
@@ -43,23 +43,9 @@ export function roleColumns({ canManage, onOpen, onDelete }: RoleColumnActions):
       header: "",
       cell: (role) => (
         <span className="flex items-center justify-end gap-1">
-          <button
-            type="button"
-            aria-label={`Open ${role.name}`}
-            onClick={() => onOpen(role)}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-          >
-            <PencilIcon />
-          </button>
+          <Button variant={ButtonVariant.edit} aria-label={`Open ${role.name}`} onClick={() => onOpen(role)} />
           {canManage && !role.is_system ? (
-            <button
-              type="button"
-              aria-label={`Delete ${role.name}`}
-              onClick={() => onDelete(role)}
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
-            >
-              <TrashIcon />
-            </button>
+            <Button variant={ButtonVariant.delete} aria-label={`Delete ${role.name}`} onClick={() => onDelete(role)} />
           ) : null}
         </span>
       ),

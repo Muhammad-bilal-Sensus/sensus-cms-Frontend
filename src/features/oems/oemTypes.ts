@@ -1,27 +1,11 @@
-export const oemStatuses = ["active", "inactive", "draft"] as const;
+import { recordStatuses, toRecordStatus } from "@/constants/recordStatus";
+import type { RecordStatus } from "@/types/recordStatus";
 
-export type OemStatus = (typeof oemStatuses)[number];
+export const oemStatuses = recordStatuses;
 
-export const oemStatusOptions: { value: OemStatus; label: string }[] = [
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-  { value: "draft", label: "Draft" },
-];
+export type OemStatus = RecordStatus;
 
-export const oemStatusTone: Record<OemStatus, string> = {
-  active: "bg-[#dcecdf] text-[#287560]",
-  inactive: "bg-slate-100 text-slate-500",
-  draft: "bg-[#f7e3d7] text-[#bd672f]",
-};
-
-export function toOemStatus(value: string): OemStatus {
-  return (oemStatuses as readonly string[]).includes(value) ? value as OemStatus : "active";
-}
-
-export function oemStatusLabel(status: string) {
-  return oemStatusOptions.find((option) => option.value === status)?.label
-    ?? (status ? status.charAt(0).toUpperCase() + status.slice(1) : "Unknown");
-}
+export const toOemStatus = toRecordStatus;
 
 export type CmsOem = {
   id: number;

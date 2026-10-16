@@ -1,375 +1,236 @@
-import { useSchemaForm } from "@/hooks/useSchemaForm";
-import { FormInput, FormSelect } from "@/components/form/FormControls";
-import { getFormError } from "@/utils/forms";
-import { modelFormSchema, versionFormSchema, trimFormSchema, schemaError } from "./modelSchemas";
-import { useEffect, useMemo, useState } from "react";
-import { previewModels, previewOems, specificationDefinitions } from "./previewCatalog";
-import {
-  bodyTypeOptions,
-  slugify,
-  statusOptions,
-  type CatalogModel,
-  type ModelDraft,
-  type ModelTrim,
-  type ModelVersion,
-  type TrimDraft,
-  type VersionDraft,
-} from "./modelTypes";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 import { usePermission } from "@/access/usePermission";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import ModelWorkspace from "./components/ModelWorkspace";
-import Pagination from "@/components/ui/Pagination";
-import Select from "@/components/ui/Select";
-import Table from "@/components/ui/Table";
+import Button, { ButtonVariant } from "@/components/ui/Button";
+import DataTable from "@/components/ui/DataTable";
 import { Field } from "@/components/ui/Field";
+import Input from "@/components/ui/Input";
+import { ModalAlign } from "@/components/ui/Modal";
+import ModalBox from "@/components/ui/ModalBox";
+import Select from "@/components/ui/Select";
+import { useDeleteModelMutation, useGetModelsQuery } from "@/redux/api/modelApi";
+import { useGetOemsQuery } from "@/redux/api/oemApi";
+import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
+import { getApiErrorMessage } from "@/utils/apiError";
+import { compareText } from "@/utils/compareText";
+import ModelFormModal from "./components/ModelFormModal";
+import ModelVersionsPanel from "./components/ModelVersionsPanel";
 import { modelColumns } from "./modelColumns";
+import { modelStatusOptions, type CmsVehicleModel } from "./vehicleModelTypes";
 
-type Screen = { name: "list" } | { name: "create" } | { name: "model"; modelId: string };
+const pageSizeOptions = [10, 15, 25, 50];
 
-const emptyDraft: ModelDraft = {
-  oemId: previewOems[0]?.id ?? "",
-  code: "",
-  name: "",
-  slug: "",
-  bodyType: "suv",
-  status: "draft",
-};
-
-function modelError(draft: ModelDraft, models: CatalogModel[], ignoreId?: string) {
-  return schemaError(modelFormSchema(models, ignoreId), draft);
-}
-
-function versionError(draft: VersionDraft, versions: ModelVersion[]) {
-  return schemaError(versionFormSchema(versions), draft);
-}
-
-function trimError(draft: TrimDraft, trims: ModelTrim[]) {
-  return schemaError(trimFormSchema(trims), draft);
+function compareModels(left: CmsVehicleModel, right: CmsVehicleModel, sort: string) {
+  const [field, direction] = sort.split(":");
+  if (field === "code") return compareText(left.code, right.code, direction);
+  if (field === "created_at") {
+    const leftTime = left.created_at ? Date.parse(left.created_at) : 0;
+    const rightTime = right.created_at ? Date.parse(right.created_at) : 0;
+    const factor = direction === "desc" ? -1 : 1;
+    return (leftTime - rightTime) * factor;
+  }
+  return compareText(left.name, right.name, direction);
 }
 
 export default function ModelsPage() {
   const { can } = usePermission();
-  const canCreateModel = can("models.create");
-  const [models, setModels] = useState<CatalogModel[]>(() => structuredClone(previewModels));
-  const [screen, setScreen] = useState<Screen>({ name: "list" });
+  const canCreate = can("models.create");
+  const canEdit = can("models.update");
+  const canDelete = can("models.delete");
+  const [search, setSearch] = useState("");
   const [oemId, setOemId] = useState("");
-  const [bodyType, setBodyType] = useState("");
   const [status, setStatus] = useState("");
-  const [query, setQuery] = useState("");
-  const createForm = useSchemaForm(modelFormSchema(models), emptyDraft);
-  const createError = getFormError(createForm.formState.errors);
-  const [slugEdited, setSlugEdited] = useState(false);
-  const [codeEdited, setCodeEdited] = useState(false);
+  const [featured, setFeatured] = useState("");
+  const [sort, setSort] = useState("name:asc");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [perPage, setPerPage] = useState(15);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deletingModel, setDeletingModel] = useState<CmsVehicleModel | null>(null);
+  const [versionsModel, setVersionsModel] = useState<CmsVehicleModel | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const waitForRefresh = useWaitForQueryRefresh();
+  const [deleteModel, deleteMutation] = useDeleteModelMutation();
+  const isDeleting = deleteMutation.isLoading || refreshing;
+  const debouncedSearch = useDebounce(search);
+  const oemsQuery = useGetOemsQuery();
+  const queryArg = useMemo(() => ({
+    oemId: oemId ? Number(oemId) : undefined,
+    status: status || undefined,
+    featured: featured === "" ? undefined : featured === "1",
+  }), [featured, oemId, status]);
+
+  async function submitDelete() {
+    if (isDeleting || !deletingModel) return;
+    try {
+      const message = await deleteModel(deletingModel.id).unwrap();
+      setRefreshing(true);
+      toast.success(message);
+      await waitForRefresh();
+      setDeletingModel(null);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Could not delete the model."));
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  const filterKey = `${debouncedSearch}|${oemId}|${status}|${featured}|${sort}|${perPage}`;
+  const [syncedFilterKey, setSyncedFilterKey] = useState(filterKey);
+  if (syncedFilterKey !== filterKey) {
+    setSyncedFilterKey(filterKey);
+    setPage(1);
+  }
+  const requestPage = syncedFilterKey === filterKey ? page : 1;
+
+  const modelsQuery = useGetModelsQuery(queryArg, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
+  const loadedModels = modelsQuery.isError ? modelsQuery.currentData : modelsQuery.data;
+  const models = loadedModels ?? [];
+  const oemNames = useMemo(() => {
+    const names = new Map<number, string>();
+    for (const oem of oemsQuery.data ?? []) names.set(oem.id, oem.name);
+    return names;
+  }, [oemsQuery.data]);
 
   const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
+    const needle = debouncedSearch.trim().toLowerCase();
     return models
       .filter((model) => {
-        const oem = previewOems.find((item) => item.id === model.oemId);
-        const haystack = `${model.name} ${model.code} ${model.slug} ${oem?.name ?? ""}`.toLowerCase();
-        return (
-          (!oemId || model.oemId === oemId) &&
-          (!bodyType || model.bodyType === bodyType) &&
-          (!status || model.status === status) &&
-          (!needle || haystack.includes(needle))
-        );
+        const haystack = `${model.name} ${model.code} ${model.slug ?? ""} ${model.body_type}`.toLowerCase();
+        return !needle || haystack.includes(needle);
       })
-      .sort((left, right) => left.name.localeCompare(right.name));
-  }, [bodyType, models, oemId, query, status]);
+      .sort((left, right) => compareModels(left, right, sort));
+  }, [debouncedSearch, models, sort]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [oemId, bodyType, status, query, pageSize]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const currentPage = Math.min(page, pageCount);
-  const visibleModels = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const total = filtered.length;
+  const pageCount = Math.max(1, Math.ceil(total / perPage));
+  const currentPage = Math.min(requestPage, pageCount);
+  const rows = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+  const errorMessage = modelsQuery.isError ? getApiErrorMessage(modelsQuery.error, "Could not load models.") : null;
+  const oemOptions = (oemsQuery.data ?? []).map((oem) => ({ value: String(oem.id), label: oem.name }));
 
   const columns = useMemo(
-    () => modelColumns((model) => setScreen({ name: "model", modelId: model.id })),
-    [],
+    () => modelColumns({
+      sort,
+      onSort: setSort,
+      oemName: (id) => oemNames.get(id) ?? "—",
+      onOpen: setVersionsModel,
+      onEdit: canEdit ? (model) => {
+        setEditingId(model.id);
+        setFormOpen(true);
+      } : undefined,
+      onDelete: canDelete ? setDeletingModel : undefined,
+    }),
+    [canDelete, canEdit, oemNames, sort],
   );
 
-  const selected = screen.name === "model" ? models.find((model) => model.id === screen.modelId) : undefined;
-
-  function openCreate() {
-    createForm.reset(emptyDraft);
-    setSlugEdited(false);
-    setCodeEdited(false);
-    setScreen({ name: "create" });
+  function closeForm() {
+    setFormOpen(false);
+    setEditingId(null);
   }
 
-  function createModel(draft: ModelDraft) {
-    const nextDraft = { ...draft, slug: draft.slug.trim(), code: draft.code.trim(), name: draft.name.trim() };
-    const error = modelError(nextDraft, models);
-    if (error) {
-      createForm.setError("root", { message: error });
-      return;
-    }
-    const id = `model-${crypto.randomUUID()}`;
-    const model: CatalogModel = { id, ...nextDraft, versions: [] };
-    setModels((current) => [model, ...current]);
-    setScreen({ name: "model", modelId: id });
-  }
-
-  function updateModel(modelId: string, recipe: (model: CatalogModel) => CatalogModel) {
-    setModels((current) => current.map((model) => (model.id === modelId ? recipe(model) : model)));
-  }
-
-  if (selected) {
+  if (versionsModel) {
     return (
-      <div className="mx-auto w-full max-w-[1600px] pb-8">
-        <ModelWorkspace
-          key={selected.id}
-          model={selected}
-          oems={previewOems}
-          definitions={specificationDefinitions}
-          onBack={() => setScreen({ name: "list" })}
-          onSaveModel={(next) => {
-            const error = modelError(next, models, selected.id);
-            if (error) return error;
-            updateModel(selected.id, (model) => ({
-              ...model,
-              ...next,
-              name: next.name.trim(),
-              code: next.code.trim(),
-              slug: next.slug.trim(),
-            }));
-            return null;
-          }}
-          onAddVersion={(next) => {
-            const error = versionError(next, selected.versions);
-            if (error) return error;
-            const version: ModelVersion = {
-              id: `ver-${crypto.randomUUID()}`,
-              code: next.code.trim(),
-              name: next.name.trim(),
-              modelYear: Number(next.modelYear),
-              status: next.status,
-              contentSections: [],
-              media: [],
-              trims: [],
-            };
-            updateModel(selected.id, (model) => ({ ...model, versions: [...model.versions, version] }));
-            return null;
-          }}
-          onAddTrim={(versionId, next) => {
-            const version = selected.versions.find((item) => item.id === versionId);
-            if (!version) return "Choose a version first.";
-            const error = trimError(next, version.trims);
-            if (error) return error;
-            const trim: ModelTrim = {
-              id: `trim-${crypto.randomUUID()}`,
-              code: next.code.trim(),
-              name: next.name.trim(),
-              powertrainType: next.powertrainType,
-              price: Number(next.price),
-              currencyCode: next.currencyCode,
-              status: next.status,
-              specifications: [],
-            };
-            updateModel(selected.id, (model) => ({
-              ...model,
-              versions: model.versions.map((item) =>
-                item.id === versionId ? { ...item, trims: [...item.trims, trim] } : item,
-              ),
-            }));
-            return null;
-          }}
-          onChangeSection={(versionId, key, body) => {
-            updateModel(selected.id, (model) => ({
-              ...model,
-              versions: model.versions.map((item) => {
-                if (item.id !== versionId) return item;
-                const existing = item.contentSections.some((section) => section.key === key);
-                return {
-                  ...item,
-                  contentSections: existing
-                    ? item.contentSections.map((section) => (section.key === key ? { ...section, body } : section))
-                    : [...item.contentSections, { key, body }],
-                };
-              }),
-            }));
-          }}
-          onAddMedia={(versionId, name) => {
-            const version = selected.versions.find((item) => item.id === versionId);
-            if (!version) return "Choose a version first.";
-            if (version.media.some((asset) => asset.name.toLowerCase() === name.toLowerCase())) {
-              return "This file is already linked to this version.";
-            }
-            updateModel(selected.id, (model) => ({
-              ...model,
-              versions: model.versions.map((item) =>
-                item.id === versionId
-                  ? { ...item, media: [...item.media, { id: `media-${crypto.randomUUID()}`, name }] }
-                  : item,
-              ),
-            }));
-            return null;
-          }}
-          onRemoveMedia={(versionId, mediaId) => {
-            updateModel(selected.id, (model) => ({
-              ...model,
-              versions: model.versions.map((version) =>
-                version.id === versionId
-                  ? { ...version, media: version.media.filter((asset) => asset.id !== mediaId) }
-                  : version,
-              ),
-            }));
-          }}
-        />
-      </div>
+      <ModelVersionsPanel
+        model={versionsModel}
+        oemName={oemNames.get(versionsModel.oem_id) ?? "—"}
+        onBack={() => setVersionsModel(null)}
+      />
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-5 pb-8">
-      <section className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200 bg-white px-5 py-4 md:flex-row md:items-end">
+      <section className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-xs text-slate-500">
             Sensus AI <span className="px-1 text-slate-300">/</span> Models
           </p>
           <h1 className="mt-1 font-brand text-2xl font-semibold text-slate-900">Models</h1>
-          <p className="mt-1 text-sm text-slate-500">OEM catalog, model versions, and current trim prices.</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {loadedModels ? `${total} ${total === 1 ? "model" : "models"}` : "Vehicle models for each OEM."}
+          </p>
         </div>
-        {screen.name === "list" ? (
-          canCreateModel ? <Button variant="primary" onClick={openCreate}>New model</Button> : null
-        ) : (
-          <Button variant="secondary" onClick={() => setScreen({ name: "list" })}>Back to models</Button>
-        )}
+        {canCreate ? (
+          <Button
+            variant={ButtonVariant.primary}
+            onClick={() => {
+              setEditingId(null);
+              setFormOpen(true);
+            }}
+          >
+            Add model
+          </Button>
+        ) : null}
       </section>
 
-      {screen.name === "create" ? (
-        <form onSubmit={createForm.submitForm(createModel)} noValidate className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-slate-900">New model</h2>
-          <p className="mt-1 text-xs text-slate-500">Code and slug must be unique inside the selected OEM.</p>
-          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <Field label="OEM">
-              <FormSelect
-                form={createForm}
-                name="oemId"
-                clearErrorOnChange={false}
-                options={previewOems.map((oem) => ({ value: oem.id, label: oem.name }))}
-              />
-            </Field>
-            <Field label="Name">
-              <FormInput
-                form={createForm}
-                name="name"
-                clearErrorOnChange={false}
-                onValueChange={(value) => {
-                  if (!slugEdited) createForm.setValue("slug", slugify(value), { shouldDirty: true });
-                  if (!codeEdited) createForm.setValue("code", slugify(value).replace(/-/g, "").toUpperCase(), { shouldDirty: true });
-                }}
-              />
-            </Field>
-            <Field label="Code">
-              <FormInput
-                form={createForm}
-                name="code"
-                clearErrorOnChange={false}
-                transform={(value) => value.toUpperCase()}
-                onValueChange={() => setCodeEdited(true)}
-              />
-            </Field>
-            <Field label="Slug">
-              <FormInput
-                form={createForm}
-                name="slug"
-                clearErrorOnChange={false}
-                onValueChange={() => setSlugEdited(true)}
-              />
-            </Field>
-            <Field label="Body type">
-              <FormSelect
-                form={createForm}
-                name="bodyType"
-                clearErrorOnChange={false}
-                options={bodyTypeOptions}
-              />
-            </Field>
-            <Field label="Status">
-              <FormSelect
-                form={createForm}
-                name="status"
-                clearErrorOnChange={false}
-                options={statusOptions}
-              />
-            </Field>
-          </div>
-          {createError ? <p className="mt-3 text-sm text-rose-600">{createError}</p> : null}
-          <div className="mt-4">
-            <Button variant="primary" type="submit">Create model</Button>
-          </div>
-        </form>
-      ) : (
-        <>
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Summary label="Models" value={String(filtered.length)} />
-            <Summary label="Published" value={String(filtered.filter((model) => model.status === "published").length)} />
-            <Summary label="Versions" value={String(filtered.reduce((sum, model) => sum + model.versions.length, 0))} />
-            <Summary
-              label="Trims"
-              value={String(filtered.reduce((sum, model) => sum + model.versions.reduce((count, version) => count + version.trims.length, 0), 0))}
+      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <Field label="Search">
+            <Input value={search} onChange={setSearch} placeholder="Name, code, slug, or body type" />
+          </Field>
+          <Field label="OEM">
+            <Select value={oemId} onChange={setOemId} placeholder="All OEMs" options={oemOptions} />
+          </Field>
+          <Field label="Status">
+            <Select value={status} onChange={setStatus} placeholder="All statuses" options={modelStatusOptions} />
+          </Field>
+          <Field label="Featured">
+            <Select
+              value={featured}
+              onChange={setFeatured}
+              placeholder="All models"
+              options={[
+                { value: "1", label: "Featured" },
+                { value: "0", label: "Not featured" },
+              ]}
             />
-          </section>
+          </Field>
+        </div>
+      </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <Field label="Search">
-                <Input value={query} onChange={setQuery} placeholder="Name, code, or slug" />
-              </Field>
-              <Field label="OEM">
-                <Select
-                  value={oemId}
-                  onChange={setOemId}
-                  placeholder="All OEMs"
-                  options={previewOems.map((oem) => ({ value: oem.id, label: oem.name }))}
-                />
-              </Field>
-              <Field label="Body type">
-                <Select
-                  value={bodyType}
-                  onChange={setBodyType}
-                  placeholder="All body types"
-                  options={bodyTypeOptions}
-                />
-              </Field>
-              <Field label="Status">
-                <Select value={status} onChange={setStatus} placeholder="All statuses" options={statusOptions} />
-              </Field>
-            </div>
-          </section>
+      <DataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(model) => String(model.id)}
+        emptyLabel={modelsQuery.isLoading ? "" : errorMessage ? "Models could not be loaded." : "No models match these filters."}
+        isLoading={modelsQuery.isFetching}
+        loadingLabel="Loading models"
+        errorMessage={errorMessage}
+        pagination={{
+          page: currentPage,
+          pageSize: perPage,
+          total,
+          pageSizeOptions,
+          onPageChange: setPage,
+          onPageSizeChange: setPerPage,
+        }}
+      />
 
-          <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-            <Table
-              columns={columns}
-              rows={visibleModels}
-              getRowId={(model) => model.id}
-              emptyLabel="No models match these filters."
-            />
-            <Pagination
-              page={currentPage}
-              pageSize={pageSize}
-              total={filtered.length}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-            />
-          </section>
-        </>
-      )}
+      <ModelFormModal open={formOpen} modelId={editingId} onClose={closeForm} />
+      <ModalBox
+        open={Boolean(deletingModel)}
+        title="Delete model"
+        text={deletingModel ? `Delete ${deletingModel.name}?` : "Delete this model?"}
+        onClose={() => setDeletingModel(null)}
+        align={ModalAlign.center}
+        alert
+        buttons={[
+          { text: "Cancel", variant: ButtonVariant.secondary, onClick: () => setDeletingModel(null), disabled: isDeleting },
+          {
+            text: isDeleting ? "Deleting..." : "Delete",
+            variant: ButtonVariant.primary,
+            background: "#b44850",
+            onClick: () => void submitDelete(),
+            disabled: isDeleting,
+          },
+        ]}
+      />
     </div>
-  );
-}
-
-function Summary({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-slate-900">{value}</p>
-    </article>
   );
 }

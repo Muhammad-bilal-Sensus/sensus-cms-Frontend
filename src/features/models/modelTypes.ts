@@ -143,18 +143,6 @@ export function labelFor<T extends string>(options: { value: T; label: string }[
   return options.find((option) => option.value === value)?.label ?? value;
 }
 
-export function formatMoney(amount: number, currencyCode: string) {
-  try {
-    return new Intl.NumberFormat("en-SA", {
-      style: "currency",
-      currency: currencyCode,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `${currencyCode} ${amount.toLocaleString("en-SA")}`;
-  }
-}
-
 export function slugify(value: string) {
   return value
     .trim()

@@ -4,6 +4,12 @@ export enum ApiTag {
   Roles = "Roles",
   Permissions = "Permissions",
   Oems = "Oems",
+  Microsites = "Microsites",
+  Branches = "Branches",
+  MediaAssets = "MediaAssets",
+  Models = "Models",
+  ModelVersions = "ModelVersions",
+  ModelTrims = "ModelTrims",
 }
 
 export enum ApiErrorKind {
@@ -42,6 +48,12 @@ export const API_PATH = {
   Roles: "/api/cms/v1/roles",
   Permissions: "/api/cms/v1/permissions",
   Oems: "/api/cms/v1/oems",
+  Microsites: "/api/cms/v1/microsites",
+  Branches: "/api/cms/v1/branches",
+  MediaAssets: "/api/cms/v1/media-assets",
+  Models: "/api/cms/v1/models",
+  ModelVersions: "/api/cms/v1/model-versions",
+  ModelTrims: "/api/cms/v1/model-trims",
 } as const;
 
 export const PUBLIC_AUTH_ENDPOINTS: readonly string[] = [

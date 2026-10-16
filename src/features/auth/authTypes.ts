@@ -35,7 +35,6 @@ export type AuthUser = ApiUser & {
 
 export type LoginData = {
   token: string;
-  token_type: string;
   user: ApiUser;
 };
 

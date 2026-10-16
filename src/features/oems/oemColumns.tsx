@@ -1,40 +1,27 @@
-import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import Button, { ButtonVariant } from "@/components/ui/Button";
+import SortHeader from "@/components/ui/SortHeader";
+import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
-import { oemStatusLabel, oemStatusTone, type CmsOem } from "./oemTypes";
-
-function formatDateTime(value: string | null | undefined) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function StatusPill({ status }: { status: string }) {
-  const tone = oemStatusTone[status as keyof typeof oemStatusTone] ?? "bg-slate-100 text-slate-500";
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{oemStatusLabel(status)}</span>;
-}
+import { formatDateTime } from "@/utils/formatDateTime";
+import type { CmsOem } from "./oemTypes";
 
 type OemColumnActions = {
+  sort: string;
+  onSort: (sort: string) => void;
   onEdit: (oem: CmsOem) => void;
   onDelete: (oem: CmsOem) => void;
 };
 
-export function oemColumns({ onEdit, onDelete }: OemColumnActions): TableColumn<CmsOem>[] {
+export function oemColumns({ sort, onSort, onEdit, onDelete }: OemColumnActions): TableColumn<CmsOem>[] {
   return [
     {
       id: "name",
-      header: "Name",
+      header: <SortHeader label="Name" field="name" sort={sort} onSort={onSort} />,
       cell: (oem) => <span className="font-medium text-slate-900">{oem.name}</span>,
     },
     {
       id: "code",
-      header: "Code",
+      header: <SortHeader label="Code" field="code" sort={sort} onSort={onSort} />,
       cell: (oem) => <span className="font-mono text-xs text-slate-600">{oem.code}</span>,
     },
     {
@@ -49,11 +36,11 @@ export function oemColumns({ onEdit, onDelete }: OemColumnActions): TableColumn<
     {
       id: "status",
       header: "Status",
-      cell: (oem) => <StatusPill status={oem.status} />,
+      cell: (oem) => <StatusBadge status={oem.status} />,
     },
     {
       id: "created",
-      header: "Created",
+      header: <SortHeader label="Created" field="created_at" sort={sort} onSort={onSort} />,
       cell: (oem) => <span className="whitespace-nowrap text-slate-600">{formatDateTime(oem.created_at)}</span>,
     },
     {
@@ -61,22 +48,22 @@ export function oemColumns({ onEdit, onDelete }: OemColumnActions): TableColumn<
       header: "",
       cell: (oem) => (
         <span className="flex items-center justify-end gap-1">
-          <button
-            type="button"
+          <Button
+            variant={ButtonVariant.edit}
             aria-label={`Edit ${oem.name}`}
-            onClick={() => onEdit(oem)}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-          >
-            <PencilIcon />
-          </button>
-          <button
-            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onEdit(oem);
+            }}
+          />
+          <Button
+            variant={ButtonVariant.delete}
             aria-label={`Delete ${oem.name}`}
-            onClick={() => onDelete(oem)}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
-          >
-            <TrashIcon />
-          </button>
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(oem);
+            }}
+          />
         </span>
       ),
     },

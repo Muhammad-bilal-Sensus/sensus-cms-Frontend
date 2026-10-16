@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { requiredText } from "@/utils/validators";
+import { oemCodeFromName } from "./oemCode";
 import { oemStatuses } from "./oemTypes";
 
 const oemCode = z.string().superRefine((value, context) => {
@@ -14,7 +15,10 @@ const oemCode = z.string().superRefine((value, context) => {
 });
 
 export const oemFormSchema = z.object({
-  name: requiredText("Enter a name."),
+  name: requiredText("Enter a name.").refine(
+    (value) => value.trim().length === 0 || Boolean(oemCodeFromName(value)),
+    "Enter a name that can be turned into a code.",
+  ),
   code: oemCode,
   description: z.string(),
   status: z.enum(oemStatuses),
