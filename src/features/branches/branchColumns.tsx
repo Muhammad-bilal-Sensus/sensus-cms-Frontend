@@ -1,4 +1,4 @@
-import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import Button, { ButtonVariant } from "@/components/ui/Button";
 import SortHeader from "@/components/ui/SortHeader";
 import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
@@ -48,28 +48,22 @@ export function branchColumns({ sort, onSort, onEdit, onDelete }: BranchColumnAc
       header: "",
       cell: (branch) => (
         <span className="flex items-center justify-end gap-1">
-          <button
-            type="button"
+          <Button
+            variant={ButtonVariant.edit}
             aria-label={`Edit ${branch.name}`}
             onClick={(event) => {
               event.stopPropagation();
               onEdit(branch);
             }}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-          >
-            <PencilIcon />
-          </button>
-          <button
-            type="button"
+          />
+          <Button
+            variant={ButtonVariant.delete}
             aria-label={`Delete ${branch.name}`}
             onClick={(event) => {
               event.stopPropagation();
               onDelete(branch);
             }}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
-          >
-            <TrashIcon />
-          </button>
+          />
         </span>
       ),
     },

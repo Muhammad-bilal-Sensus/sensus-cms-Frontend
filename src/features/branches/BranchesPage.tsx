@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useDeleteBranchMutation, useGetBranchesQuery } from "@/redux/api/branchApi";
 import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
 import { getApiErrorMessage } from "@/utils/apiError";
@@ -13,17 +14,6 @@ import { StatusSelect } from "@/components/ui/Status";
 import type { BranchSortBy, BranchSortDir, CmsBranch } from "./branchTypes";
 
 const pageSizeOptions = [10, 15, 25, 50];
-
-function useDebouncedValue(value: string, delay = 350) {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(value), delay);
-    return () => window.clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
 
 const branchSortFields: readonly BranchSortBy[] = ["name", "code", "city", "phone", "status"];
 
@@ -48,8 +38,8 @@ export default function BranchesPage() {
   const waitForRefresh = useWaitForQueryRefresh();
   const [deleteBranch, deleteMutation] = useDeleteBranchMutation();
   const isDeleting = deleteMutation.isLoading || refreshing;
-  const debouncedSearch = useDebouncedValue(search);
-  const debouncedCity = useDebouncedValue(city);
+  const debouncedSearch = useDebounce(search);
+  const debouncedCity = useDebounce(city);
 
   async function submitDelete() {
     if (isDeleting) return;

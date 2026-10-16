@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from "react";
+import { Icon } from "@/components/icons/Icon";
 import Loading from "./Loading";
 
 export type TableColumn<T> = {
@@ -16,6 +17,7 @@ type TableProps<T> = {
   selectedRowId?: string;
   expandedRowId?: string | null;
   renderExpanded?: (row: T) => ReactNode;
+  expandLabel?: (row: T, expanded: boolean) => string;
   isLoading?: boolean;
   loadingLabel?: string;
 };
@@ -29,6 +31,7 @@ export default function Table<T>({
   selectedRowId,
   expandedRowId,
   renderExpanded,
+  expandLabel,
   isLoading = false,
   loadingLabel = "Loading",
 }: TableProps<T>) {
@@ -56,25 +59,48 @@ export default function Table<T>({
               rows.map((row) => {
                 const rowId = getRowId(row);
                 const selected = selectedRowId === rowId;
-                const expanded = expandedRowId === rowId && renderExpanded;
+                const canExpand = Boolean(renderExpanded && onRowClick);
+                const expanded = Boolean(canExpand && expandedRowId === rowId);
+                const panelId = `row-details-${rowId}`;
                 return (
                   <Fragment key={rowId}>
                     <tr
                       onClick={onRowClick ? () => onRowClick(row) : undefined}
-                      aria-expanded={expanded ? true : undefined}
                       className={`border-t border-slate-100 ${onRowClick ? "cursor-pointer" : ""} ${
                         selected ? "bg-teal-50" : "hover:bg-slate-50"
                       }`}
                     >
-                      {columns.map((column) => (
+                      {columns.map((column, index) => (
                         <td key={column.id} className="px-5 py-3">
-                          {column.cell(row)}
+                          {index === 0 && canExpand ? (
+                            <span className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                aria-expanded={expanded}
+                                aria-controls={panelId}
+                                aria-label={expandLabel?.(row, expanded) ?? (expanded ? "Collapse row" : "Expand row")}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  onRowClick?.(row);
+                                }}
+                                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+                              >
+                                <Icon
+                                  name="chevronRight"
+                                  className={`h-4 w-4 transition-transform ${expanded ? "rotate-90" : ""}`}
+                                />
+                              </button>
+                              {column.cell(row)}
+                            </span>
+                          ) : (
+                            column.cell(row)
+                          )}
                         </td>
                       ))}
                     </tr>
-                    {expanded ? (
+                    {expanded && renderExpanded ? (
                       <tr className="border-t border-slate-100 bg-slate-50">
-                        <td colSpan={columns.length} className="px-5 py-4">
+                        <td id={panelId} colSpan={columns.length} className="px-5 py-4">
                           {renderExpanded(row)}
                         </td>
                       </tr>

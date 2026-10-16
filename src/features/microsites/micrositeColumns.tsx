@@ -1,4 +1,5 @@
-import { PencilIcon, SyncIcon, TrashIcon } from "@/components/icons/Icon";
+import { SyncIcon } from "@/components/icons/Icon";
+import Button, { ButtonVariant } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
 import type { CmsMicrosite } from "./micrositeTypes";
@@ -36,22 +37,8 @@ export function micrositeColumns({ onSync, onEdit, onDelete }: MicrositeColumnAc
       header: "",
       cell: (site) => (
         <span className="flex items-center justify-end gap-1">
-          <button
-            type="button"
-            aria-label={`Edit ${site.name}`}
-            onClick={() => onEdit(site)}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-          >
-            <PencilIcon />
-          </button>
-          <button
-            type="button"
-            aria-label={`Delete ${site.name}`}
-            onClick={() => onDelete(site)}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
-          >
-            <TrashIcon />
-          </button>
+          <Button variant={ButtonVariant.edit} aria-label={`Edit ${site.name}`} onClick={() => onEdit(site)} />
+          <Button variant={ButtonVariant.delete} aria-label={`Delete ${site.name}`} onClick={() => onDelete(site)} />
         </span>
       ),
     },

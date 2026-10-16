@@ -1,22 +1,10 @@
 import { AppRole } from "@/access/roles";
-import { PencilIcon, TrashIcon } from "@/components/icons/Icon";
+import Button, { ButtonVariant } from "@/components/ui/Button";
 import SortHeader from "@/components/ui/SortHeader";
 import { StatusBadge } from "@/components/ui/Status";
 import type { TableColumn } from "@/components/ui/Table";
+import { formatDateTime } from "@/utils/formatDateTime";
 import type { CmsUser } from "./userTypes";
-
-function formatDateTime(value: string | null) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
 
 function actorLabel(actor: CmsUser["created_by"]) {
   if (!actor) return "—";
@@ -108,24 +96,10 @@ export function userColumns({
         return (
           <span className="flex items-center justify-end gap-1">
             {showEdit ? (
-              <button
-                type="button"
-                aria-label={`Edit ${user.full_name}`}
-                onClick={() => onEdit(user)}
-                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
-              >
-                <PencilIcon />
-              </button>
+              <Button variant={ButtonVariant.edit} aria-label={`Edit ${user.full_name}`} onClick={() => onEdit(user)} />
             ) : null}
             {showDelete ? (
-              <button
-                type="button"
-                aria-label={`Delete ${user.full_name}`}
-                onClick={() => onDelete(user)}
-                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full text-rose-600 hover:bg-rose-50"
-              >
-                <TrashIcon />
-              </button>
+              <Button variant={ButtonVariant.delete} aria-label={`Delete ${user.full_name}`} onClick={() => onDelete(user)} />
             ) : null}
           </span>
         );

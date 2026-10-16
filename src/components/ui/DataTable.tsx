@@ -27,6 +27,7 @@ type DataTableProps<T> = {
   selectedRowId?: string;
   expandedRowId?: string | null;
   renderExpanded?: (row: T) => ReactNode;
+  expandLabel?: (row: T, expanded: boolean) => string;
 };
 
 export default function DataTable<T>({
@@ -42,6 +43,7 @@ export default function DataTable<T>({
   selectedRowId,
   expandedRowId,
   renderExpanded,
+  expandLabel,
 }: DataTableProps<T>) {
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -57,6 +59,7 @@ export default function DataTable<T>({
             selectedRowId={selectedRowId}
             expandedRowId={expandedRowId}
             renderExpanded={renderExpanded}
+            expandLabel={expandLabel}
           />
         </div>
         {isLoading ? <Loading label={loadingLabel} overlay /> : null}

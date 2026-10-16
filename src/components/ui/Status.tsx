@@ -1,16 +1,7 @@
 import type { FieldPathByValue, FieldValues, UseFormReturn } from "react-hook-form";
 import { FormSelect } from "@/components/form/FormControls";
 import Select from "@/components/ui/Select";
-
-export const recordStatuses = ["draft", "active", "inactive"] as const;
-
-export type RecordStatus = (typeof recordStatuses)[number];
-
-export const recordStatusOptions: { value: RecordStatus; label: string }[] = [
-  { value: "draft", label: "Draft" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
+import { recordStatusOptions } from "@/constants/recordStatus";
 
 const statusTone: Record<string, string> = {
   draft: "bg-[#f7e3d7] text-[#bd672f]",
@@ -18,11 +9,8 @@ const statusTone: Record<string, string> = {
   inactive: "bg-slate-100 text-slate-500",
   published: "bg-[#dcecdf] text-[#287560]",
   suspended: "bg-[#f4dddd] text-[#b44850]",
+  discontinued: "bg-slate-200 text-slate-600",
 };
-
-export function toRecordStatus(value: string): RecordStatus {
-  return (recordStatuses as readonly string[]).includes(value) ? value as RecordStatus : "active";
-}
 
 export function recordStatusLabel(status: string) {
   return recordStatusOptions.find((option) => option.value === status)?.label

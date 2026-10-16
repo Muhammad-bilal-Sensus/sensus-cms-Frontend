@@ -35,7 +35,8 @@ export type IconName =
   | "clock"
   | "megaphone"
   | "clipboard"
-  | "plus";
+  | "plus"
+  | "layers";
 
 const icons: Record<IconName, ReactNode> = {
   bell: (
@@ -225,6 +226,13 @@ const icons: Record<IconName, ReactNode> = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  layers: (
+    <>
+      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 16 9 5 9-5" />
+    </>
+  ),
 };
 
 function BranchesGlyph() {
@@ -244,6 +252,10 @@ export function BranchesIcon({ className }: { className?: string }) {
 
 export function SyncIcon({ className }: { className?: string }) {
   return <Icon name="sync" className={className} />;
+}
+
+export function LayersIcon({ className }: { className?: string }) {
+  return <Icon name="layers" className={className} />;
 }
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {

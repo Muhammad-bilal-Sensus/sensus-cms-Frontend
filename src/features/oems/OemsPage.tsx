@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useDeleteOemMutation, useGetOemsQuery } from "@/redux/api/oemApi";
 import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { compareText } from "@/utils/compareText";
 import Button, { ButtonVariant } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import DataTable from "@/components/ui/DataTable";
@@ -14,22 +16,6 @@ import { StatusSelect } from "@/components/ui/Status";
 import type { CmsOem } from "./oemTypes";
 
 const pageSizeOptions = [10, 15, 25, 50];
-
-function useDebouncedValue(value: string, delay = 350) {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(value), delay);
-    return () => window.clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
-
-function compareText(left: string, right: string, direction: string) {
-  const factor = direction === "desc" ? -1 : 1;
-  return left.localeCompare(right) * factor;
-}
 
 function compareOems(left: CmsOem, right: CmsOem, sort: string) {
   const [field, direction] = sort.split(":");
@@ -57,7 +43,7 @@ export default function OemsPage() {
   const waitForRefresh = useWaitForQueryRefresh();
   const [deleteOem, deleteMutation] = useDeleteOemMutation();
   const isDeleting = deleteMutation.isLoading || refreshing;
-  const debouncedSearch = useDebouncedValue(search);
+  const debouncedSearch = useDebounce(search);
 
   async function submitDelete() {
     if (isDeleting) return;
@@ -118,9 +104,8 @@ export default function OemsPage() {
           setFormOpen(true);
         },
         onDelete: setDeletingOem,
-        expandedOemId: openOemId,
       }),
-    [openOemId, sort],
+    [sort],
   );
 
   function closeForm() {
@@ -176,6 +161,7 @@ export default function OemsPage() {
         selectedRowId={openOemId === null ? undefined : String(openOemId)}
         expandedRowId={openOemId === null ? null : String(openOemId)}
         renderExpanded={(oem) => <MicrositePanel oemId={oem.id} oemName={oem.name} />}
+        expandLabel={(oem, expanded) => `${expanded ? "Hide" : "Show"} microsites for ${oem.name}`}
         pagination={{
           page: currentPage,
           pageSize: perPage,

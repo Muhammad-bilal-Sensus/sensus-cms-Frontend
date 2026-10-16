@@ -4,7 +4,8 @@ import { useGetRolesQuery } from "@/redux/api/roleApi";
 import { REFERENCE_DATA_FRESH_SECONDS } from "@/redux/constants";
 import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
 import { useStaleRefetch } from "@/redux/store/useStaleRefetch";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
 import AddUserModal from "./components/AddUserModal";
 import Button from "@/components/ui/Button";
@@ -27,17 +28,6 @@ const statusOptions = [
   { value: "inactive", label: "Inactive" },
   { value: "suspended", label: "Suspended" },
 ];
-
-function useDebouncedValue(value: string, delay = 350) {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(value), delay);
-    return () => window.clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
 
 function parseSort(value: string): { sortBy: UserSortBy; sortDir: SortDirection } {
   const [field, direction] = value.split(":");
@@ -67,7 +57,7 @@ export default function UsersPage() {
   const waitForRefresh = useWaitForQueryRefresh();
   const [deleteUser, deleteMutation] = useDeleteUserMutation();
   const isDeleting = deleteMutation.isLoading || refreshing;
-  const debouncedSearch = useDebouncedValue(search);
+  const debouncedSearch = useDebounce(search);
 
   async function submitDelete() {
     if (isDeleting) return;

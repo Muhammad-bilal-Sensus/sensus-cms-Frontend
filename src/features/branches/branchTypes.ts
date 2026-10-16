@@ -1,4 +1,4 @@
-import type { RecordStatus } from "@/components/ui/Status";
+import type { RecordStatus } from "@/types/recordStatus";
 
 export type BranchStatus = RecordStatus;
 

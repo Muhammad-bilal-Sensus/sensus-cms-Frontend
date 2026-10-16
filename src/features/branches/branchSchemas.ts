@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isRecord } from "@/utils/apiError";
 import { requiredText } from "@/utils/validators";
-import { recordStatuses } from "@/components/ui/Status";
+import { recordStatuses } from "@/constants/recordStatus";
 import type { OpeningHours } from "./branchTypes";
 
 const branchCode = z.string().superRefine((value, context) => {

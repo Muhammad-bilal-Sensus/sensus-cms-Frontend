@@ -10,7 +10,6 @@ import { ModalAlign, ModalSize } from "@/components/ui/Modal";
 import { FormInput, FormTextarea } from "@/components/form/FormControls";
 import { StatusFormSelect } from "@/components/ui/Status";
 import { useSchemaForm } from "@/hooks/useSchemaForm";
-import { oemCodeFromName } from "../oemCode";
 import { emptyOemForm, oemFormSchema, type OemFormValues } from "../oemSchemas";
 import { toOemStatus, type CmsOem, type OemPayload } from "../oemTypes";
 
@@ -56,10 +55,10 @@ function formFromOem(oem: CmsOem): OemFormValues {
   };
 }
 
-function toPayload(values: OemFormValues, generateCode: boolean): OemPayload {
+function toPayload(values: OemFormValues): OemPayload {
   return {
     name: values.name.trim(),
-    code: generateCode ? oemCodeFromName(values.name) : values.code.trim(),
+    code: values.code.trim(),
     description: values.description.trim(),
     status: values.status,
   };
@@ -89,7 +88,7 @@ export default function OemFormModal({ open, oemId, onClose }: OemFormModalProps
   async function submit(values: OemFormValues) {
     if (isSaving || isLoadingDetail) return;
     try {
-      const payload = toPayload(values, oemId === null);
+      const payload = toPayload(values);
       const result = oemId === null
         ? await createOem(payload).unwrap()
         : await updateOem({ id: oemId, payload }).unwrap();
@@ -122,10 +121,7 @@ export default function OemFormModal({ open, oemId, onClose }: OemFormModalProps
         </div>
       ) : (
         <form
-          onSubmit={(event) => {
-            if (oemId === null) form.setValue("code", oemCodeFromName(form.getValues("name")));
-            void form.submitForm(submit)(event);
-          }}
+          onSubmit={(event) => void form.submitForm(submit)(event)}
           className="grid gap-2 [&_input]:h-8 [&_label]:gap-0.5 [&_select]:h-8"
           noValidate
         >

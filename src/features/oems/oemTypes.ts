@@ -1,4 +1,5 @@
-import { recordStatuses, toRecordStatus, type RecordStatus } from "@/components/ui/Status";
+import { recordStatuses, toRecordStatus } from "@/constants/recordStatus";
+import type { RecordStatus } from "@/types/recordStatus";
 
 export const oemStatuses = recordStatuses;
 

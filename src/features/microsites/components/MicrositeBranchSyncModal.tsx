@@ -22,6 +22,7 @@ type SyncRow = {
   supportsSales: boolean;
   supportsService: boolean;
   supportsTestDrive: boolean;
+  sortOrder: number | null;
   status: MicrositeBranchLinkStatus;
 };
 
@@ -49,18 +50,25 @@ function buildRows(branches: CmsBranch[], links: MicrositeBranchLink[]): SyncRow
       supportsSales: link?.supports_sales ?? false,
       supportsService: link?.supports_service ?? false,
       supportsTestDrive: link?.supports_test_drive ?? false,
+      sortOrder: link ? link.sort_order : null,
       status: link?.status ?? "active",
     };
   });
 }
 
 function toPayload(rows: SyncRow[]): MicrositeBranchLink[] {
-  return rows.filter((row) => row.included).map((row, index) => ({
+  const included = rows.filter((row) => row.included);
+  const saved = included
+    .filter((row) => row.sortOrder !== null)
+    .sort((left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0));
+  const added = included.filter((row) => row.sortOrder === null);
+  let nextOrder = saved.reduce((max, row) => Math.max(max, row.sortOrder ?? 0), 0) + 1;
+  return [...saved, ...added].map((row) => ({
     branch_id: row.branchId,
     supports_sales: row.supportsSales,
     supports_service: row.supportsService,
     supports_test_drive: row.supportsTestDrive,
-    sort_order: index + 1,
+    sort_order: row.sortOrder ?? nextOrder++,
     status: row.status,
   }));
 }

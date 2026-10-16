@@ -14,6 +14,7 @@ function isMediaListBody(body: unknown) {
   return isRecord(body) && Array.isArray(body.data) && isRecord(body.meta);
 }
 
+// Kept for the Media page. The /media route still renders SectionPage, so these hooks are unused until that screen is built.
 export const mediaApi = cmsApi.injectEndpoints({
   endpoints: (builder) => ({
     getMediaAssets: builder.query<MediaAssetsListResult, FetchMediaAssetsParams | void>({

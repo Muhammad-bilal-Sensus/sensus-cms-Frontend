@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
+import { useDebounce } from "@/hooks/useDebounce";
 import "leaflet/dist/leaflet.css";
 
 const KUWAIT = { lat: 29.3759, lng: 47.9774 };
@@ -27,8 +28,11 @@ type PhotonResponse = {
 };
 
 function readCoordinate(latitude: string, longitude: string): LatLng | null {
-  const lat = Number(latitude);
-  const lng = Number(longitude);
+  const latText = latitude.trim();
+  const lngText = longitude.trim();
+  if (!latText || !lngText) return null;
+  const lat = Number(latText);
+  const lng = Number(lngText);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
   return { lat, lng };
@@ -38,19 +42,10 @@ function formatCoordinate(value: number) {
   return String(Math.round(value * 1e6) / 1e6);
 }
 
-function useDebouncedValue(value: string, delay: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(value), delay);
-    return () => window.clearTimeout(timer);
-  }, [delay, value]);
-  return debounced;
-}
-
-async function lookupAddress(query: string): Promise<LatLng | null> {
+async function lookupAddress(query: string, signal: AbortSignal): Promise<LatLng | null> {
   const response = await fetch(
     `https://photon.komoot.io/api/?limit=1&q=${encodeURIComponent(query)}`,
-    { headers: { Accept: "application/json" } },
+    { headers: { Accept: "application/json" }, signal },
   );
   if (!response.ok) return null;
   const body = await response.json() as PhotonResponse;
@@ -75,7 +70,7 @@ export default function BranchMapPicker({
   const [ready, setReady] = useState(false);
   const [lookingUp, setLookingUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const debouncedQuery = useDebouncedValue(query, 700);
+  const debouncedQuery = useDebounce(query, 700);
 
   onPickRef.current = onPick;
   disabledRef.current = disabled;
@@ -147,12 +142,14 @@ export default function BranchMapPicker({
     if (!canGeocode || lookup.length < 5) return;
     const savedCoordinates = readCoordinate(coordinatesRef.current.latitude, coordinatesRef.current.longitude);
     if (lookup === initialQuery.current && savedCoordinates) return;
+
+    const controller = new AbortController();
     const id = ++requestId.current;
     setLookingUp(true);
     setError(null);
-    lookupAddress(lookup)
+    lookupAddress(lookup, controller.signal)
       .then((position) => {
-        if (id !== requestId.current) return;
+        if (controller.signal.aborted || id !== requestId.current) return;
         setLookingUp(false);
         if (!position) {
           setError("That address was not found on the map.");
@@ -160,11 +157,18 @@ export default function BranchMapPicker({
         }
         onPickRef.current(formatCoordinate(position.lat), formatCoordinate(position.lng));
       })
-      .catch(() => {
-        if (id !== requestId.current) return;
+      .catch((error: unknown) => {
+        if (controller.signal.aborted || id !== requestId.current) return;
+        if (error instanceof DOMException && error.name === "AbortError") return;
         setLookingUp(false);
         setError("Could not look up that address.");
       });
+
+    return () => {
+      controller.abort();
+      requestId.current += 1;
+      setLookingUp(false);
+    };
   }, [canGeocode, debouncedQuery]);
 
   return (

@@ -9,7 +9,8 @@ import Input from "@/components/ui/Input";
 import ModalBox from "@/components/ui/ModalBox";
 import { ModalAlign, ModalSize } from "@/components/ui/Modal";
 import { FormInput } from "@/components/form/FormControls";
-import { StatusFormSelect, toRecordStatus } from "@/components/ui/Status";
+import { toRecordStatus } from "@/constants/recordStatus";
+import { StatusFormSelect } from "@/components/ui/Status";
 import { useSchemaForm } from "@/hooks/useSchemaForm";
 import { emptyBranchForm, splitOpeningHours, branchFormSchema, type BranchFormValues, type ExtraHour } from "../branchSchemas";
 import type { BranchPayload, CmsBranch, OpeningHours } from "../branchTypes";
@@ -208,11 +209,13 @@ export default function BranchFormModal({ open, branchId, onClose }: BranchFormM
       size={ModalSize.lg}
       align={ModalAlign.center}
     >
-      {isLoadingDetail || !formReady ? (
+      {isLoadingDetail || (!formReady && !detailError) ? (
         <div className="flex items-center justify-center gap-3 py-8 text-sm text-slate-600">
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-teal-700" />
           {BranchFormText.loading}
         </div>
+      ) : detailError && !formReady ? (
+        <p className="py-8 text-center text-sm text-rose-600">{detailError}</p>
       ) : (
         <form
           onSubmit={(event) => void form.submitForm(submit)(event)}
