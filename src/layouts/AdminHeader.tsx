@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { usePermission } from "../access/usePermission";
 import { LogoIcon } from "@/components/icons/FormIcons";
+import { ROUTES } from "@/constants/routes";
 import { useAuth } from "@/features/auth/useAuth";
 import AllModulesModal from "./AllModulesModal";
 import { Icon } from "@/components/icons/Icon";
@@ -54,7 +55,7 @@ export default function AdminHeader() {
             <NavLink
               key={item.to}
               to={item.to}
-              end
+              end={item.to !== ROUTES.models}
               className={({ isActive }) =>
                 `flex shrink-0 flex-col items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] leading-none ${isActive ? "font-medium text-slate-900" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
                 }`
@@ -89,9 +90,6 @@ export default function AdminHeader() {
       <div className="ml-6 flex shrink-0 items-center gap-5 text-slate-400">
         <button type="button" aria-label="Refresh" className="rounded-full p-1 hover:text-slate-700">
           <Icon name="refresh" className="h-5 w-5" />
-        </button>
-        <button type="button" aria-label="Support" className="rounded-full p-1 hover:text-slate-700">
-          <Icon name="headset" className="h-5 w-5" />
         </button>
         <AccountMenu />
       </div>

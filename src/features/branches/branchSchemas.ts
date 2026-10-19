@@ -55,7 +55,7 @@ function optionalCoordinate(min: number, max: number, label: string) {
 export const branchFormSchema = z.object({
   name: limitedText("Enter a name.", 150, "Name must be 150 characters or fewer."),
   code: branchCode,
-  dms_branch_id: optionalLimited(100, "DMS branch ID must be 100 characters or fewer."),
+  dms_branch_id: optionalLimited(100, "DMS location ID must be 100 characters or fewer."),
   address_line_1: limitedText("Enter an address.", 255, "Address must be 255 characters or fewer."),
   address_line_2: optionalLimited(255, "Address line 2 must be 255 characters or fewer."),
   city: limitedText("Enter a city.", 100, "City must be 100 characters or fewer."),

@@ -128,7 +128,7 @@ export default function ModelWorkspace({
           <StatusBadge status={model.status} />
         </div>
         <p className="mt-1 text-sm text-slate-500">
-          One model belongs to one OEM. Versions hold the marketing sections. Each trim keeps one current price.
+          One model belongs to one OEM. Variants hold the marketing sections. Each trim keeps one current price.
         </p>
       </section>
 
@@ -191,7 +191,7 @@ export default function ModelWorkspace({
       <section className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-slate-900">Versions</h2>
+            <h2 className="text-sm font-semibold text-slate-900">Variants</h2>
             <button
               type="button"
               onClick={() => {
@@ -200,12 +200,12 @@ export default function ModelWorkspace({
               }}
               className="text-xs font-medium text-teal-800"
             >
-              {showVersionForm ? "Close" : "Add version"}
+              {showVersionForm ? "Close" : "Add variant"}
             </button>
           </div>
           <div className="mt-3 space-y-2">
             {model.versions.length === 0 ? (
-              <p className="rounded-lg bg-slate-50 px-3 py-6 text-center text-sm text-slate-500">No versions yet</p>
+              <p className="rounded-lg bg-slate-50 px-3 py-6 text-center text-sm text-slate-500">No variants yet</p>
             ) : (
               model.versions.map((item) => {
                 const selected = item.id === version?.id;
@@ -270,7 +270,7 @@ export default function ModelWorkspace({
                 />
               </Field>
               {versionError ? <p className="text-sm text-rose-600">{versionError}</p> : null}
-              <Button variant="primary" type="submit">Add version</Button>
+              <Button variant="primary" type="submit">Add variant</Button>
             </form>
           ) : null}
         </div>
@@ -322,7 +322,7 @@ export default function ModelWorkspace({
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Media</h3>
-                  <p className="mt-1 text-xs text-slate-500">Choose an image for this version. The same file can be attached once.</p>
+                  <p className="mt-1 text-xs text-slate-500">Choose an image for this variant. The same file can be attached once.</p>
                 </div>
                 <Button variant="secondary" onClick={() => mediaInputRef.current?.click()}>Add media</Button>
                 <input
@@ -341,7 +341,7 @@ export default function ModelWorkspace({
               {mediaError ? <p className="mt-2 text-sm text-rose-600">{mediaError}</p> : null}
               <div className="mt-3 flex flex-wrap gap-2">
                 {version.media.length === 0 ? (
-                  <p className="text-xs text-slate-500">No media linked to this version.</p>
+                  <p className="text-xs text-slate-500">No media linked to this variant.</p>
                 ) : (
                   version.media.map((asset) => (
                     <span
@@ -383,7 +383,7 @@ export default function ModelWorkspace({
                 columns={trimColumns}
                 rows={version.trims}
                 getRowId={(item) => item.id}
-                emptyLabel="No trims on this version"
+                emptyLabel="No trims on this variant"
                 onRowClick={(item) => setTrimId(item.id)}
                 selectedRowId={trim?.id}
               />
@@ -428,7 +428,7 @@ export default function ModelWorkspace({
           </div>
         ) : (
           <section className="flex min-h-64 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-            Add a model version to enter marketing sections, media, and trims.
+            Add a model variant to enter marketing sections, media, and trims.
           </section>
         )}
       </section>

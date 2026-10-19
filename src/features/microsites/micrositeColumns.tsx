@@ -20,11 +20,11 @@ export function micrositeColumns({ onSync, onEdit, onDelete }: MicrositeColumnAc
     { id: "status", header: "Status", cell: (site) => <StatusBadge status={site.status} /> },
     {
       id: "sync",
-      header: "Sync branches",
+      header: "Sync locations",
       cell: (site) => (
         <button
           type="button"
-          aria-label={`Sync branches for ${site.name}`}
+          aria-label={`Sync locations for ${site.name}`}
           onClick={() => onSync(site)}
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-teal-700 hover:bg-teal-50"
         >

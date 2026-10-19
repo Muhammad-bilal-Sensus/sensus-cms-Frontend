@@ -23,8 +23,8 @@ export function modelFormSchema(models: CatalogModel[], ignoreId?: string) {
 
 export function versionFormSchema(versions: ModelVersion[]) {
   return z.object({
-    code: requiredText("Enter a version code."),
-    name: requiredText("Enter a version name."),
+    code: requiredText("Enter a variant code."),
+    name: requiredText("Enter a variant name."),
     modelYear: z.string().refine((value) => {
       const year = Number(value);
       return Number.isInteger(year) && year >= 1980 && year <= 2100;
@@ -51,7 +51,7 @@ export function trimFormSchema(trims: ModelTrim[]) {
   }).superRefine((draft, context) => {
     if (!draft.code.trim() || !draft.name.trim() || !Number.isFinite(Number(draft.price)) || Number(draft.price) < 0 || !draft.currencyCode) return;
     if (trims.some((trim) => sameKey(trim.code, draft.code))) {
-      context.addIssue({ code: "custom", path: ["code"], message: "This code is already used on this version." });
+      context.addIssue({ code: "custom", path: ["code"], message: "This code is already used on this variant." });
     }
   });
 }

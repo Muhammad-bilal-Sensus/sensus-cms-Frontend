@@ -96,7 +96,7 @@ export default function TrimFormModal({ open, trimId, versionId, versionCode, on
     <ModalBox
       open={open}
       title={editing ? "Edit trim" : "Add trim"}
-      description={editing ? "Update this trim and its price." : "Add a priced trim for this version."}
+      description={editing ? "Update this trim and its price." : "Add a priced trim for this variant."}
       onClose={onClose}
       size={ModalSize.lg}
       align={ModalAlign.center}

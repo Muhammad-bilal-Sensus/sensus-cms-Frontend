@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePermission } from "@/access/usePermission";
 import Button, { ButtonVariant } from "@/components/ui/Button";
+import { ROUTES } from "@/constants/routes";
 import DataTable from "@/components/ui/DataTable";
 import { Field } from "@/components/ui/Field";
 import Input from "@/components/ui/Input";
@@ -14,7 +16,6 @@ import { useGetOemsQuery } from "@/redux/api/oemApi";
 import { useWaitForQueryRefresh } from "@/redux/store/queryRefresh";
 import { getApiErrorMessage } from "@/utils/apiError";
 import { compareText } from "@/utils/compareText";
-import ModelFormModal from "./components/ModelFormModal";
 import ModelVersionsPanel from "./components/ModelVersionsPanel";
 import { modelColumns } from "./modelColumns";
 import { modelStatusOptions, type CmsVehicleModel } from "./vehicleModelTypes";
@@ -34,19 +35,17 @@ function compareModels(left: CmsVehicleModel, right: CmsVehicleModel, sort: stri
 }
 
 export default function ModelsPage() {
+  const navigate = useNavigate();
   const { can } = usePermission();
   const canCreate = can("models.create");
   const canEdit = can("models.update");
   const canDelete = can("models.delete");
   const [search, setSearch] = useState("");
-  const [oemId, setOemId] = useState("");
   const [status, setStatus] = useState("");
   const [featured, setFeatured] = useState("");
   const [sort, setSort] = useState("name:asc");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingModel, setDeletingModel] = useState<CmsVehicleModel | null>(null);
   const [versionsModel, setVersionsModel] = useState<CmsVehicleModel | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -56,10 +55,9 @@ export default function ModelsPage() {
   const debouncedSearch = useDebounce(search);
   const oemsQuery = useGetOemsQuery();
   const queryArg = useMemo(() => ({
-    oemId: oemId ? Number(oemId) : undefined,
     status: status || undefined,
     featured: featured === "" ? undefined : featured === "1",
-  }), [featured, oemId, status]);
+  }), [featured, status]);
 
   async function submitDelete() {
     if (isDeleting || !deletingModel) return;
@@ -76,7 +74,7 @@ export default function ModelsPage() {
     }
   }
 
-  const filterKey = `${debouncedSearch}|${oemId}|${status}|${featured}|${sort}|${perPage}`;
+  const filterKey = `${debouncedSearch}|${status}|${featured}|${sort}|${perPage}`;
   const [syncedFilterKey, setSyncedFilterKey] = useState(filterKey);
   if (syncedFilterKey !== filterKey) {
     setSyncedFilterKey(filterKey);
@@ -112,27 +110,17 @@ export default function ModelsPage() {
   const currentPage = Math.min(requestPage, pageCount);
   const rows = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
   const errorMessage = modelsQuery.isError ? getApiErrorMessage(modelsQuery.error, "Could not load models.") : null;
-  const oemOptions = (oemsQuery.data ?? []).map((oem) => ({ value: String(oem.id), label: oem.name }));
 
   const columns = useMemo(
     () => modelColumns({
       sort,
       onSort: setSort,
-      oemName: (id) => oemNames.get(id) ?? "—",
       onOpen: setVersionsModel,
-      onEdit: canEdit ? (model) => {
-        setEditingId(model.id);
-        setFormOpen(true);
-      } : undefined,
+      onEdit: canEdit ? (model) => navigate(`${ROUTES.models}/${model.id}/edit`) : undefined,
       onDelete: canDelete ? setDeletingModel : undefined,
     }),
-    [canDelete, canEdit, oemNames, sort],
+    [canDelete, canEdit, navigate, sort],
   );
-
-  function closeForm() {
-    setFormOpen(false);
-    setEditingId(null);
-  }
 
   if (versionsModel) {
     return (
@@ -157,25 +145,16 @@ export default function ModelsPage() {
           </p>
         </div>
         {canCreate ? (
-          <Button
-            variant={ButtonVariant.primary}
-            onClick={() => {
-              setEditingId(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button variant={ButtonVariant.primary} onClick={() => navigate(ROUTES.modelNew)}>
             Add model
           </Button>
         ) : null}
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <Field label="Search">
             <Input value={search} onChange={setSearch} placeholder="Name, code, slug, or body type" />
-          </Field>
-          <Field label="OEM">
-            <Select value={oemId} onChange={setOemId} placeholder="All OEMs" options={oemOptions} />
           </Field>
           <Field label="Status">
             <Select value={status} onChange={setStatus} placeholder="All statuses" options={modelStatusOptions} />
@@ -212,7 +191,6 @@ export default function ModelsPage() {
         }}
       />
 
-      <ModelFormModal open={formOpen} modelId={editingId} onClose={closeForm} />
       <ModalBox
         open={Boolean(deletingModel)}
         title="Delete model"

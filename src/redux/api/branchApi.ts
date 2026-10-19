@@ -40,7 +40,7 @@ export const branchApi = cmsApi.injectEndpoints({
         };
       },
       transformResponse: (body: unknown) => readBranches(body),
-      extraOptions: { fallbackMessage: "Could not load branches." },
+      extraOptions: { fallbackMessage: "Could not load locations." },
       providesTags: [ApiTag.Branches],
     }),
     getBranch: builder.query<CmsBranch, number>({
@@ -49,7 +49,7 @@ export const branchApi = cmsApi.injectEndpoints({
         validateStatus: (response, body: unknown) => isSuccessfulResponse(response, body) && hasDataField(body, "id"),
       }),
       transformResponse: (body: ApiEnvelope<CmsBranch>) => body.data,
-      extraOptions: { fallbackMessage: "Could not load the branch." },
+      extraOptions: { fallbackMessage: "Could not load the location." },
       providesTags: [ApiTag.Branches],
     }),
     createBranch: builder.mutation<BranchMutationResult, BranchPayload>({
@@ -59,8 +59,8 @@ export const branchApi = cmsApi.injectEndpoints({
         body,
         validateStatus: (response, body: unknown) => isSuccessfulResponse(response, body) && hasDataField(body, "id"),
       }),
-      transformResponse: (body: ApiEnvelope<CmsBranch>) => ({ branch: body.data, message: responseMessage(body, "Branch created.") }),
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not create the branch." },
+      transformResponse: (body: ApiEnvelope<CmsBranch>) => ({ branch: body.data, message: responseMessage(body, "Location created.") }),
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not create the location." },
       invalidatesTags: (_result, error) => error ? [] : [ApiTag.Branches],
     }),
     updateBranch: builder.mutation<BranchMutationResult, UpdateBranchArgs>({
@@ -70,14 +70,14 @@ export const branchApi = cmsApi.injectEndpoints({
         body: payload,
         validateStatus: (response, body: unknown) => isSuccessfulResponse(response, body) && hasDataField(body, "id"),
       }),
-      transformResponse: (body: ApiEnvelope<CmsBranch>) => ({ branch: body.data, message: responseMessage(body, "Branch updated.") }),
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not update the branch." },
+      transformResponse: (body: ApiEnvelope<CmsBranch>) => ({ branch: body.data, message: responseMessage(body, "Location updated.") }),
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not update the location." },
       invalidatesTags: (_result, error) => error ? [] : [ApiTag.Branches],
     }),
     deleteBranch: builder.mutation<string, number>({
       query: (id) => ({ url: API_PATH.Branches + "/" + id, method: HttpMethod.Delete, validateStatus: isSuccessfulResponse }),
-      transformResponse: (body: MessageResponse) => responseMessage(body, "Branch deleted."),
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not delete the branch." },
+      transformResponse: (body: MessageResponse) => responseMessage(body, "Location deleted."),
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not delete the location." },
       invalidatesTags: (_result, error) => error ? [] : [ApiTag.Branches],
     }),
   }),

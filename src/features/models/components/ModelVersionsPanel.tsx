@@ -75,7 +75,7 @@ export default function ModelVersionsPanel({ model, oemName, onBack }: ModelVers
       await waitForRefresh();
       setDeletingVersion(null);
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Could not delete the version."));
+      toast.error(getApiErrorMessage(error, "Could not delete the variant."));
     } finally {
       setRefreshing(false);
     }
@@ -113,7 +113,7 @@ export default function ModelVersionsPanel({ model, oemName, onBack }: ModelVers
   const pageCount = Math.max(1, Math.ceil(total / perPage));
   const currentPage = Math.min(requestPage, pageCount);
   const rows = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
-  const errorMessage = versionsQuery.isError ? getApiErrorMessage(versionsQuery.error, "Could not load versions.") : null;
+  const errorMessage = versionsQuery.isError ? getApiErrorMessage(versionsQuery.error, "Could not load variants.") : null;
   const columns = useMemo(
     () => versionColumns({
       sort,
@@ -149,12 +149,12 @@ export default function ModelVersionsPanel({ model, oemName, onBack }: ModelVers
               <span className="px-1 text-slate-300">/</span>
               {model.name}
               <span className="px-1 text-slate-300">/</span>
-              Versions
+              Variants
             </p>
-            <h1 className="mt-1 font-brand text-2xl font-semibold text-slate-900">Versions</h1>
+            <h1 className="mt-1 font-brand text-2xl font-semibold text-slate-900">Variants</h1>
             <p className="mt-1 text-sm text-slate-500">
               {model.name}
-              {loadedVersions ? ` · ${total} ${total === 1 ? "version" : "versions"}` : ""}
+              {loadedVersions ? ` · ${total} ${total === 1 ? "variant" : "variants"}` : ""}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -167,7 +167,7 @@ export default function ModelVersionsPanel({ model, oemName, onBack }: ModelVers
                   setFormOpen(true);
                 }}
               >
-                Add version
+                Add variant
               </Button>
             ) : null}
           </div>
@@ -198,9 +198,9 @@ export default function ModelVersionsPanel({ model, oemName, onBack }: ModelVers
         columns={columns}
         rows={rows}
         getRowId={(version) => String(version.id)}
-        emptyLabel={versionsQuery.isLoading ? "" : errorMessage ? "Versions could not be loaded." : "No versions for this model yet."}
+        emptyLabel={versionsQuery.isLoading ? "" : errorMessage ? "Variants could not be loaded." : "No variants for this model yet."}
         isLoading={versionsQuery.isFetching}
-        loadingLabel="Loading versions"
+        loadingLabel="Loading variants"
         errorMessage={errorMessage}
         pagination={{
           page: currentPage,
@@ -224,8 +224,8 @@ export default function ModelVersionsPanel({ model, oemName, onBack }: ModelVers
       />
       <ModalBox
         open={Boolean(deletingVersion)}
-        title="Delete version"
-        text={deletingVersion ? `Delete ${deletingVersion.name} ${deletingVersion.model_year}?` : "Delete this version?"}
+        title="Delete variant"
+        text={deletingVersion ? `Delete ${deletingVersion.name} ${deletingVersion.model_year}?` : "Delete this variant?"}
         onClose={() => setDeletingVersion(null)}
         align={ModalAlign.center}
         alert

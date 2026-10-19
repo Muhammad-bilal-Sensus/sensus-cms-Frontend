@@ -42,7 +42,7 @@ export const previewModels: CatalogModel[] = [
           { key: "technology", body: "Adaptive cruise, 360 camera, and wireless CarPlay." },
           { key: "safety", body: "Six airbags and a full driver-assistance suite." },
           { key: "charging", body: "" },
-          { key: "highlights", body: "Book a test drive at an Albisher branch." },
+          { key: "highlights", body: "Book a test drive at an Albisher location." },
         ],
         media: [
           { id: "media-t2-hero", name: "T2 hero" },
@@ -210,7 +210,7 @@ export const previewModels: CatalogModel[] = [
         contentSections: [
           { key: "overview", body: "Family electric SUV." },
           { key: "charging", body: "DC fast charge and an 11 kW home charger." },
-          { key: "highlights", body: "Range and charging blocks stay on this version." },
+          { key: "highlights", body: "Range and charging blocks stay on this variant." },
         ],
         media: [{ id: "media-s09-hero", name: "S09 hero" }],
         trims: [

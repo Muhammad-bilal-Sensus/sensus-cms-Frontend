@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
+import AdminFooter from "./AdminFooter";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 
@@ -19,6 +20,7 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      <AdminFooter />
     </div>
   );
 }

@@ -118,35 +118,35 @@ export default function MicrositeBranchSyncModal({ open, microsite, onClose }: M
       await waitForRefresh();
       onClose();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Could not sync branches."));
+      toast.error(getApiErrorMessage(error, "Could not sync locations."));
     } finally {
       setRefreshing(false);
     }
   }
 
-  const branchesError = branchesQuery.isError ? getApiErrorMessage(branchesQuery.error, "Could not load branches.") : null;
-  const linksError = linksQuery.isError ? getApiErrorMessage(linksQuery.error, "Could not load linked branches.") : null;
+  const branchesError = branchesQuery.isError ? getApiErrorMessage(branchesQuery.error, "Could not load locations.") : null;
+  const linksError = linksQuery.isError ? getApiErrorMessage(linksQuery.error, "Could not load linked locations.") : null;
 
   return (
     <ModalBox
       open={open}
-      title={`Branches for ${microsite.name}`}
-      description="Choose which branches this microsite uses, and what each one can do."
+      title={`Locations for ${microsite.name}`}
+      description="Choose which locations this microsite uses, and what each one can do."
       onClose={onClose}
       size={ModalSize.lg}
       align={ModalAlign.center}
     >
       {!rows && !branchesError && !linksError ? (
         <div className="flex justify-center py-8">
-          <Loading label="Loading branches" />
+          <Loading label="Loading locations" />
         </div>
       ) : (
         <div className="grid gap-3 text-left">
           {branchesError ? <p className="text-sm text-rose-600">{branchesError}</p> : null}
           {linksError ? <p className="text-sm text-rose-600">{linksError}</p> : null}
-          {rows ? <p className="text-xs text-slate-500">Saving replaces the full set of branch links for this microsite.</p> : null}
+          {rows ? <p className="text-xs text-slate-500">Saving replaces the full set of location links for this microsite.</p> : null}
           {rows && rows.length === 0 ? (
-            <p className="py-6 text-center text-sm text-slate-500">No branches yet. Add a branch first.</p>
+            <p className="py-6 text-center text-sm text-slate-500">No locations yet. Add a location first.</p>
           ) : null}
           <ul className="grid gap-2">
             {rows?.map((row) => (
@@ -199,7 +199,7 @@ export default function MicrositeBranchSyncModal({ open, microsite, onClose }: M
           </ul>
           {rows ? (
             <Button variant={ButtonVariant.primary} width="100%" height={34} disabled={!canSave} onClick={() => void submit()}>
-              {saving ? "Saving..." : "Save branches"}
+              {saving ? "Saving..." : "Save locations"}
             </Button>
           ) : null}
         </div>

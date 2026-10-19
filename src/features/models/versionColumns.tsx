@@ -30,7 +30,7 @@ export function versionColumns({ sort, onSort, onOpenTrims, onEdit, onDelete }: 
   const columns: TableColumn<CmsModelVersion>[] = [
     {
       id: "name",
-      header: <SortHeader label="Version" field="name" sort={sort} onSort={onSort} />,
+      header: <SortHeader label="Variant" field="name" sort={sort} onSort={onSort} />,
       cell: (version) => <span className="font-medium text-slate-900">{version.name}</span>,
     },
     {

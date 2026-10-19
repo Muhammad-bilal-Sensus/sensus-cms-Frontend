@@ -44,11 +44,11 @@ export default function TrimModal({ open, error, trims, onClose, onSubmit }: Tri
     <Modal
       open={open}
       title="Add trim"
-      description="One current retail price and currency for this version."
+      description="One current retail price and currency for this variant."
       onClose={onClose}
     >
       <form onSubmit={form.submitForm(onSubmit)} noValidate className="grid gap-4 sm:grid-cols-2">
-        <Field label="Code" hint="Unique on this version.">
+        <Field label="Code" hint="Unique on this variant.">
           <FormInput
             form={form}
             name="code"
