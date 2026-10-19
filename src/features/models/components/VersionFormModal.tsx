@@ -80,18 +80,18 @@ export default function VersionFormModal({ open, versionId, modelId, modelCode, 
       await waitForRefresh();
       onClose();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, editing ? "Could not update the version." : "Could not create the version."));
+      toast.error(getApiErrorMessage(error, editing ? "Could not update the variant." : "Could not create the variant."));
     } finally {
       setRefreshing(false);
     }
   }
 
-  const detailError = detailQuery.isError ? getApiErrorMessage(detailQuery.error, "Could not load the version.") : null;
+  const detailError = detailQuery.isError ? getApiErrorMessage(detailQuery.error, "Could not load the variant.") : null;
 
   return (
     <ModalBox
       open={open}
-      title={editing ? "Edit version" : "Add version"}
+      title={editing ? "Edit variant" : "Add variant"}
       description={editing ? "Update this model year." : "Add a model year for this vehicle."}
       onClose={onClose}
       size={ModalSize.lg}
@@ -100,7 +100,7 @@ export default function VersionFormModal({ open, versionId, modelId, modelCode, 
       {isLoadingDetail ? (
         <div className="flex items-center justify-center gap-3 py-8 text-sm text-slate-600">
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-teal-700" />
-          Loading version
+          Loading variant
         </div>
       ) : (
         <form onSubmit={form.submitForm(submit)} className="grid gap-3 md:grid-cols-2" noValidate>
@@ -127,7 +127,7 @@ export default function VersionFormModal({ open, versionId, modelId, modelCode, 
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">Content sections</h3>
-                <p className="mt-0.5 text-xs text-slate-500">Optional blocks shown with this version.</p>
+                <p className="mt-0.5 text-xs text-slate-500">Optional blocks shown with this variant.</p>
               </div>
               <Button variant={ButtonVariant.secondary} height={32} disabled={isSaving} onClick={() => sections.append({ key: "", title: "", body: "" })}>
                 Add section

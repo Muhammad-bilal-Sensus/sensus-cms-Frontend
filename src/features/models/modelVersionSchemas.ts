@@ -21,7 +21,7 @@ export function versionSections(sections: { key: string; title: string; body: st
 }
 
 export const versionFormSchema = z.object({
-  name: requiredText("Enter a version name.")
+  name: requiredText("Enter a variant name.")
     .refine((value) => value.trim().length <= 200, "Use 200 characters or fewer.")
     .refine((value) => modelCodeFromName(value).length > 0, "Enter a name with letters or numbers."),
   modelYear: z.string().refine((value) => {
@@ -57,7 +57,7 @@ export const versionFormSchema = z.object({
     } else if (!/^[a-z0-9_]+$/.test(key)) {
       context.addIssue({ code: "custom", path: ["sections", index, "key"], message: "Use lowercase letters, numbers, and underscores." });
     } else if (seenKeys.has(key)) {
-      context.addIssue({ code: "custom", path: ["sections", index, "key"], message: "This key is already used on this version." });
+      context.addIssue({ code: "custom", path: ["sections", index, "key"], message: "This key is already used on this variant." });
     } else {
       seenKeys.add(key);
     }

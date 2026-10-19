@@ -7,8 +7,6 @@ export const PICTURE_MIME_TYPES = ["image/jpeg", "image/png", "image/svg+xml"] a
 export const profileSchema = z.object({
   name: requiredText("Enter your name."),
   picture: z.string().optional(),
-  city: z.string(),
-  timeZone: z.string(),
   language: z.string(),
 });
 

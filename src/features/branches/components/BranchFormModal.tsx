@@ -34,14 +34,14 @@ const BranchField = {
 } as const;
 
 const BranchFormText = {
-  addTitle: "Add branch",
-  editTitle: "Edit branch",
-  addDescription: "Add a branch below.",
-  editDescription: "Update the branch below.",
-  loadError: "Could not load the branch.",
-  createError: "Could not create the branch.",
-  updateError: "Could not update the branch.",
-  loading: "Loading branch",
+  addTitle: "Add location",
+  editTitle: "Edit location",
+  addDescription: "Add a location below.",
+  editDescription: "Update the location below.",
+  loadError: "Could not load the location.",
+  createError: "Could not create the location.",
+  updateError: "Could not update the location.",
+  loading: "Loading location",
   saving: "Saving...",
   submit: "Submit",
 } as const;
@@ -239,7 +239,7 @@ export default function BranchFormModal({ open, branchId, onClose }: BranchFormM
               disabled={isSaving}
             />
           </Field>
-          <Field label="DMS branch ID" error={errors.dms_branch_id?.message}>
+          <Field label="DMS location ID" error={errors.dms_branch_id?.message}>
             <FormInput form={form} name={BranchField.dmsBranchId} htmlName={BranchField.dmsBranchId} placeholder="Titan DMS id" maxLength={100} disabled={isSaving} />
           </Field>
           <div className="sm:col-span-2">

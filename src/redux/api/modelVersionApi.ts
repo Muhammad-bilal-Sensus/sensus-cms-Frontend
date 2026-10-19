@@ -75,7 +75,7 @@ export const modelVersionApi = cmsApi.injectEndpoints({
         };
       },
       transformResponse: (body: ApiEnvelope<unknown>) => readVersions(body.data),
-      extraOptions: { fallbackMessage: "Could not load versions." },
+      extraOptions: { fallbackMessage: "Could not load variants." },
       providesTags: [ApiTag.ModelVersions],
     }),
     getModelVersion: builder.query<CmsModelVersion, number>({
@@ -85,10 +85,10 @@ export const modelVersionApi = cmsApi.injectEndpoints({
       }),
       transformResponse: (body: ApiEnvelope<unknown>) => {
         const version = readVersion(body.data);
-        if (!version) throw new Error("Could not load the version.");
+        if (!version) throw new Error("Could not load the variant.");
         return version;
       },
-      extraOptions: { fallbackMessage: "Could not load the version." },
+      extraOptions: { fallbackMessage: "Could not load the variant." },
       providesTags: [ApiTag.ModelVersions],
     }),
     createModelVersion: builder.mutation<ModelVersionMutationResult, ModelVersionPayload>({
@@ -100,10 +100,10 @@ export const modelVersionApi = cmsApi.injectEndpoints({
       }),
       transformResponse: (body: ApiEnvelope<unknown>) => {
         const version = readVersion(body.data);
-        if (!version) throw new Error("Could not create the version.");
-        return { version, message: responseMessage(body, "Version created.") };
+        if (!version) throw new Error("Could not create the variant.");
+        return { version, message: responseMessage(body, "Variant created.") };
       },
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not create the version." },
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not create the variant." },
       invalidatesTags: (_result, error) => error ? [] : [ApiTag.ModelVersions],
     }),
     updateModelVersion: builder.mutation<ModelVersionMutationResult, { id: number; payload: ModelVersionPayload }>({
@@ -115,10 +115,10 @@ export const modelVersionApi = cmsApi.injectEndpoints({
       }),
       transformResponse: (body: ApiEnvelope<unknown>) => {
         const version = readVersion(body.data);
-        if (!version) throw new Error("Could not update the version.");
-        return { version, message: responseMessage(body, "Version updated.") };
+        if (!version) throw new Error("Could not update the variant.");
+        return { version, message: responseMessage(body, "Variant updated.") };
       },
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not update the version." },
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not update the variant." },
       invalidatesTags: (_result, error) => error ? [] : [ApiTag.ModelVersions],
     }),
     deleteModelVersion: builder.mutation<string, number>({
@@ -127,8 +127,8 @@ export const modelVersionApi = cmsApi.injectEndpoints({
         method: HttpMethod.Delete,
         validateStatus: isSuccessfulResponse,
       }),
-      transformResponse: (body: MessageResponse) => responseMessage(body, "Version deleted."),
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not delete the version." },
+      transformResponse: (body: MessageResponse) => responseMessage(body, "Variant deleted."),
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not delete the variant." },
       invalidatesTags: (_result, error) => error ? [] : [ApiTag.ModelVersions],
     }),
   }),

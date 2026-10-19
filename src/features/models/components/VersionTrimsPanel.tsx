@@ -131,7 +131,7 @@ export default function VersionTrimsPanel({ model, version, onBackToVersions, on
               <span className="px-1 text-slate-300">/</span>
               {model.name}
               <span className="px-1 text-slate-300">/</span>
-              <button type="button" onClick={onBackToVersions} className="cursor-pointer hover:text-teal-800">Versions</button>
+              <button type="button" onClick={onBackToVersions} className="cursor-pointer hover:text-teal-800">Variants</button>
               <span className="px-1 text-slate-300">/</span>
               Trims
             </p>
@@ -142,7 +142,7 @@ export default function VersionTrimsPanel({ model, version, onBackToVersions, on
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant={ButtonVariant.secondary} onClick={onBackToVersions}>Back to versions</Button>
+            <Button variant={ButtonVariant.secondary} onClick={onBackToVersions}>Back to variants</Button>
             {canCreate ? (
               <Button
                 variant={ButtonVariant.primary}
@@ -182,7 +182,7 @@ export default function VersionTrimsPanel({ model, version, onBackToVersions, on
         columns={columns}
         rows={rows}
         getRowId={(trim) => String(trim.id)}
-        emptyLabel={trimsQuery.isLoading ? "" : errorMessage ? "Trims could not be loaded." : "No trims for this version yet."}
+        emptyLabel={trimsQuery.isLoading ? "" : errorMessage ? "Trims could not be loaded." : "No trims for this variant yet."}
         isLoading={trimsQuery.isFetching}
         loadingLabel="Loading trims"
         errorMessage={errorMessage}

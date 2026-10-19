@@ -44,14 +44,14 @@ export default function BranchesPage() {
   async function submitDelete() {
     if (isDeleting) return;
     try {
-      if (!deletingBranch) throw new Error("Choose a branch to delete.");
+      if (!deletingBranch) throw new Error("Choose a location to delete.");
       const message = await deleteBranch(deletingBranch.id).unwrap();
       setRefreshing(true);
       toast.success(message);
       await waitForRefresh();
       setDeletingBranch(null);
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Could not delete the branch."));
+      toast.error(getApiErrorMessage(error, "Could not delete the location."));
     } finally {
       setRefreshing(false);
     }
@@ -90,7 +90,7 @@ export default function BranchesPage() {
   const currentPage = Math.min(requestPage, pageCount);
   const rows = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
   const isLoading = branchesQuery.isFetching;
-  const errorMessage = branchesQuery.isError ? getApiErrorMessage(branchesQuery.error, "Could not load branches.") : null;
+  const errorMessage = branchesQuery.isError ? getApiErrorMessage(branchesQuery.error, "Could not load locations.") : null;
 
   const columns = useMemo(
     () =>
@@ -116,11 +116,11 @@ export default function BranchesPage() {
       <section className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-xs text-slate-500">
-            Sensus AI <span className="px-1 text-slate-300">/</span> Branches
+            Sensus AI <span className="px-1 text-slate-300">/</span> Location
           </p>
-          <h1 className="mt-1 font-brand text-2xl font-semibold text-slate-900">Branches</h1>
+          <h1 className="mt-1 font-brand text-2xl font-semibold text-slate-900">Location</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {loadedBranches ? `${total} ${total === 1 ? "branch" : "branches"}` : "Service and showroom branches."}
+            {loadedBranches ? `${total} ${total === 1 ? "location" : "locations"}` : "Service and showroom locations."}
           </p>
         </div>
         <Button
@@ -130,7 +130,7 @@ export default function BranchesPage() {
             setFormOpen(true);
           }}
         >
-          Add branch
+          Add location
         </Button>
       </section>
 
@@ -155,9 +155,9 @@ export default function BranchesPage() {
         columns={columns}
         rows={rows}
         getRowId={(branch) => String(branch.id)}
-        emptyLabel={branchesQuery.isLoading ? "" : errorMessage ? "Branches could not be loaded." : "No branches match these filters."}
+        emptyLabel={branchesQuery.isLoading ? "" : errorMessage ? "Locations could not be loaded." : "No locations match these filters."}
         isLoading={isLoading}
-        loadingLabel="Loading branches"
+        loadingLabel="Loading locations"
         errorMessage={errorMessage}
         pagination={{
           page: currentPage,
@@ -172,9 +172,9 @@ export default function BranchesPage() {
       <BranchFormModal open={formOpen} branchId={editingId} onClose={closeForm} />
       <ModalBox
         open={Boolean(deletingBranch)}
-        title="Delete branch"
-        text={deletingBranch ? `Delete ${deletingBranch.name}?` : "Delete this branch?"}
-        note="A branch linked to a microsite cannot be deleted."
+        title="Delete location"
+        text={deletingBranch ? `Delete ${deletingBranch.name}?` : "Delete this location?"}
+        note="A location linked to a microsite cannot be deleted."
         onClose={() => setDeletingBranch(null)}
         alert
         buttons={[

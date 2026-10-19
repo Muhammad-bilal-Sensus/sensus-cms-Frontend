@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { Navigate, type RouteObject } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import DashboardPage from "@/features/dashboard/DashboardPage";
+import ModelFormPage from "@/features/models/ModelFormPage";
 import ModelsPage from "@/features/models/ModelsPage";
 import RolesPage from "@/features/roles/RolesPage";
 import RoleEditorPage from "@/features/roles/RoleEditorPage";
@@ -31,6 +32,8 @@ const featurePages: Readonly<Partial<Record<string, ComponentType>>> = {
 export const CMS_ROUTE_DEFINITIONS: readonly CmsRouteDefinition[] = [
   { path: ROUTES.roleNew, Component: RoleEditorPage, permissions: ["roles.manage"] },
   { path: ROUTES.roleDetail, Component: RoleEditorPage, permissions: ["roles.view"] },
+  { path: ROUTES.modelNew, Component: ModelFormPage, permissions: ["models.create"] },
+  { path: ROUTES.modelEdit, Component: ModelFormPage, permissions: ["models.update"] },
   ...allLinks.map((item) => ({
     path: item.to,
     Component: featurePages[item.to] ?? SectionPage,

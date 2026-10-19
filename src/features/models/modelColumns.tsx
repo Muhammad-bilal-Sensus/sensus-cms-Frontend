@@ -9,13 +9,12 @@ import type { CmsVehicleModel } from "./vehicleModelTypes";
 type ModelColumnActions = {
   sort: string;
   onSort: (sort: string) => void;
-  oemName: (oemId: number) => string;
   onOpen: (model: CmsVehicleModel) => void;
   onEdit?: (model: CmsVehicleModel) => void;
   onDelete?: (model: CmsVehicleModel) => void;
 };
 
-export function modelColumns({ sort, onSort, oemName, onOpen, onEdit, onDelete }: ModelColumnActions): TableColumn<CmsVehicleModel>[] {
+export function modelColumns({ sort, onSort, onOpen, onEdit, onDelete }: ModelColumnActions): TableColumn<CmsVehicleModel>[] {
   const columns: TableColumn<CmsVehicleModel>[] = [
     {
       id: "name",
@@ -26,11 +25,6 @@ export function modelColumns({ sort, onSort, oemName, onOpen, onEdit, onDelete }
           <span className="block text-xs text-slate-400">{model.slug || "—"}</span>
         </span>
       ),
-    },
-    {
-      id: "oem",
-      header: "OEM",
-      cell: (model) => <span className="text-slate-600">{oemName(model.oem_id)}</span>,
     },
     {
       id: "code",
@@ -61,9 +55,9 @@ export function modelColumns({ sort, onSort, oemName, onOpen, onEdit, onDelete }
 
   columns.push({
     id: "versions",
-    header: "Versions",
+    header: "Variants",
     cell: (model) => (
-      <Button variant={ButtonVariant.icon} aria-label={`Versions for ${model.name}`} onClick={() => onOpen(model)}>
+      <Button variant={ButtonVariant.icon} aria-label={`Variants for ${model.name}`} onClick={() => onOpen(model)}>
         <LayersIcon className="h-4 w-4" />
       </Button>
     ),

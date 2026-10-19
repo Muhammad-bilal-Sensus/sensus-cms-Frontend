@@ -9,7 +9,6 @@ import Input from "@/components/ui/Input";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/useAuth";
 import { getApiErrorMessage } from "@/utils/apiError";
-import { Icon } from "@/components/icons/Icon";
 
 const languages = [
   { value: "en", label: "English" },
@@ -33,16 +32,14 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
     }
   }
   const fileRef = useRef<HTMLInputElement>(null);
-  const form = useSchemaForm(profileSchema, { name: "", picture: undefined, city: "", timeZone: "", language: "en" });
+  const form = useSchemaForm(profileSchema, { name: "", picture: undefined, language: "en" });
   const { reset, setValue, getFieldState } = form;
-  const { name, picture, city, timeZone, language } = form.watch();
+  const { name, picture, language } = form.watch();
   const nameError = form.formState.errors.name?.message;
   const initialized = useRef(false);
   const pictureReader = useRef<FileReader | null>(null);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [pictureError, setPictureError] = useState<string | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [locating, setLocating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMe] = useLazyGetMeQuery();
 
@@ -55,14 +52,11 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
       reset({
         name: user.full_name,
         picture: user.picture,
-        city: user.city ?? "",
-        timeZone: user.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone || "",
         language: user.language || "en",
       });
       initialized.current = true;
       setLanguageOpen(false);
       setPictureError(null);
-      setLocationError(null);
     }
     return () => { pictureReader.current?.abort(); };
   }, [open, user, reset]);
@@ -117,36 +111,6 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
     reader.readAsDataURL(file);
   }
 
-  function getLocation() {
-    if (!navigator.geolocation) {
-      setLocationError("This browser cannot read your location.");
-      return;
-    }
-    setLocating(true);
-    setLocationError(null);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        setValue("timeZone", zone, { shouldDirty: true });
-        try {
-          const response = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
-          );
-          const data = (await response.json()) as { city?: string; locality?: string; principalSubdivision?: string };
-          setValue("city", data.city || data.locality || data.principalSubdivision || "", { shouldDirty: true });
-        } catch {
-          setLocationError("Timezone was set. The city could not be detected.");
-        } finally {
-          setLocating(false);
-        }
-      },
-      () => {
-        setLocating(false);
-        setLocationError("Allow location access, then try again.");
-      },
-    );
-  }
-
   function submit(values: ProfileFormValues) {
     if (!user) return;
     try {
@@ -154,8 +118,6 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
         ...user,
         full_name: values.name.trim(),
         picture: values.picture,
-        city: values.city || undefined,
-        timeZone: values.timeZone || undefined,
         language: values.language,
       });
       toast.success("Profile updated.");
@@ -277,43 +239,6 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
               </span>
               <Input className="mt-1 h-9 bg-slate-100 text-xs" value={user.email} onChange={() => undefined} disabled />
             </label>
-          </div>
-        </div>
-
-        <div className="mt-4 border-t border-slate-200 pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">Location & Timezone</h3>
-              <p className="mt-0.5 text-xs text-slate-400">Select your location and timezone</p>
-            </div>
-            <Button variant="primary" background="#111111" height={32} className="px-3 text-xs" onClick={getLocation} disabled={locating}>
-              {locating ? "Locating..." : "Get Location"}
-              <Icon name="pin" className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-          {locationError ? <p className="mt-3 text-xs text-red-600">{locationError}</p> : null}
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <div className="flex items-center gap-2 rounded-xl bg-[#eef8f4] px-3 py-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-700">
-                <Icon name="pin" className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-[10px] font-semibold tracking-wide text-slate-500">DETECTED CITY</p>
-                <p className="text-sm font-semibold text-slate-900">{city || "—"}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl bg-[#eef8f4] px-3 py-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-700">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9s-1.3 6.2-3.8 9c-2.5-2.8-3.8-5.8-3.8-9s1.3-6.2 3.8-9Z" />
-                </svg>
-              </span>
-              <div>
-                <p className="text-[10px] font-semibold tracking-wide text-slate-500">YOUR TIME ZONE:</p>
-                <p className="text-sm font-semibold text-slate-900">{timeZone || "—"}</p>
-              </div>
-            </div>
           </div>
         </div>
 

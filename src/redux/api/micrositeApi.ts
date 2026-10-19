@@ -113,7 +113,7 @@ export const micrositeApi = cmsApi.injectEndpoints({
         validateStatus: (response, body: unknown) => isSuccessfulResponse(response, body) && isLinkListBody(body),
       }),
       transformResponse: (body: unknown) => readLinks(body),
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not load linked branches." },
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not load linked locations." },
       providesTags: (_result, _error, micrositeId) => [{ type: ApiTag.Microsites, id: "branches-" + micrositeId }],
     }),
     syncMicrositeBranches: builder.mutation<SyncMicrositeBranchesResult, SyncMicrositeBranchesArgs>({
@@ -125,9 +125,9 @@ export const micrositeApi = cmsApi.injectEndpoints({
       }),
       transformResponse: (body: MessageResponse) => ({
         links: readLinks(body),
-        message: responseMessage(body, "Microsite branches synchronized successfully."),
+        message: responseMessage(body, "Microsite locations synchronized successfully."),
       }),
-      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not sync branches." },
+      extraOptions: { maxRetries: NO_RETRIES, fallbackMessage: "Could not sync locations." },
       invalidatesTags: (_result, error, { micrositeId }) => error ? [] : [ApiTag.Microsites, { type: ApiTag.Microsites, id: "branches-" + micrositeId }],
     }),
   }),

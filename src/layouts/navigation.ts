@@ -11,15 +11,12 @@ export type NavItem = {
 // RFQ Part 2 — Primary navigation (top menu)
 export const topNav: NavItem[] = [
   { label: "OEMs", to: ROUTES.oems, icon: "building" },
-  { label: "Branches", to: ROUTES.branches, icon: "branches" },
+  { label: "Location", to: ROUTES.branches, icon: "branches" },
   { label: "Models", to: ROUTES.models, icon: "car", permissions: ["models.view"] },
   { label: "Offers", to: ROUTES.offers, icon: "tag", permissions: ["offers.view"] },
   { label: "Test Drive", to: ROUTES.testDrive, icon: "activity", permissions: ["bookings.view"] },
   { label: "Book Service", to: ROUTES.bookService, icon: "check" },
-  { label: "EV & Technology", to: ROUTES.evTechnology, icon: "zap" },
-  { label: "Owners", to: ROUTES.owners, icon: "user" },
   { label: "News", to: ROUTES.news, icon: "news", permissions: ["articles.create", "articles.publish"] },
-  { label: "About / Contact", to: ROUTES.contact, icon: "building", permissions: ["pages.create", "pages.publish"] },
 ];
 
 // CMS areas from the same RFQ: dashboard, CRM leads, branches, media, and content governance
